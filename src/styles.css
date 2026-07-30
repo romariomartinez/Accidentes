@@ -215,75 +215,42 @@ body {
 .doc-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  break-inside: avoid;
-  page-break-inside: avoid;
-  margin-top: 18px;
-  padding-top: 0;
+  gap: 6px;
+  color: #536273;
+  font-size: 10.5px;
 }
 
-.doc-note {
-  position: relative;
-  display: grid;
-  grid-template-columns: 62px 1fr;
-  min-height: 58px;
-  flex: 1 1 auto;
-  overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #d8eff2 0%, #edf8f9 100%);
-  box-shadow: inset 0 0 0 1px rgba(21, 154, 156, 0.2);
-}
-
-.doc-note::before {
-  position: absolute;
-  top: 0;
-  left: 38px;
-  width: 120px;
-  height: 2px;
-  background: #159a9c;
-  content: '';
-}
-
-.doc-note-icon {
+.doc-watermark-slogan {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #159a9c;
-  color: white;
+  gap: 10px;
+  margin: 28px 0 14px;
+  color: rgba(4, 120, 125, 0.18);
+  pointer-events: none;
+  user-select: none;
 }
 
-.doc-note p {
-  align-self: center;
-  margin: 0;
-  padding: 8px 14px;
-  color: #12243a;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.doc-note strong {
-  color: #04787d;
-  font-weight: 900;
-  margin-right: 5px;
-}
-
-.doc-slogan {
-  display: flex;
-  flex: 0 0 250px;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  color: #04787d;
-}
-
-.doc-slogan span {
+.doc-watermark-slogan span {
   font-family: "Segoe Script", "Brush Script MT", cursive;
-  font-size: 27px;
+  font-size: 36px;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
+}
+
+.doc-watermark-slogan svg {
+  height: 42px;
+  width: 42px;
+}
+
+.doc-footer {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-top: 8px;
+  border-top: 1px solid #d7e1ea;
+  padding-top: 9px;
+  text-align: center;
 }
 
 @media (max-width: 1279px) {
@@ -311,8 +278,7 @@ body {
 
   .doc-header,
   .doc-summary,
-  .doc-grid,
-  .doc-footer {
+  .doc-grid {
     grid-template-columns: 1fr;
   }
 
@@ -327,15 +293,9 @@ body {
     border-right: 0;
   }
 
-  .doc-footer {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .doc-slogan {
-    flex-basis: auto;
-    justify-content: center;
+  .doc-watermark-slogan span {
+    font-size: 26px;
+    white-space: normal;
   }
 }
 
@@ -460,7 +420,7 @@ body {
   }
 
   .doc-summary svg,
-  .doc-slogan svg {
+  .doc-footer svg {
     height: 16px !important;
     width: 16px !important;
   }
@@ -510,43 +470,28 @@ body {
     margin-top: 2px !important;
   }
 
+  .doc-watermark-slogan {
+    margin: 34px 0 18px !important;
+    color: rgba(4, 120, 125, 0.14) !important;
+  }
+
+  .doc-watermark-slogan span {
+    font-size: 34px !important;
+  }
+
+  .doc-watermark-slogan svg {
+    height: 38px !important;
+    width: 38px !important;
+  }
+
   .doc-footer {
-    align-items: center !important;
     display: flex !important;
-    gap: 18px !important;
-    justify-content: space-between !important;
-    margin-top: 34px !important;
-    padding-top: 0 !important;
-  }
-
-  .doc-note {
-    grid-template-columns: 48px 1fr !important;
-    min-height: 45px !important;
-    border-radius: 6px !important;
-  }
-
-  .doc-note p {
-    font-size: 10px !important;
-    line-height: 1.25 !important;
-    padding: 6px 10px !important;
-  }
-
-  .doc-note-icon svg {
-    height: 21px !important;
-    width: 21px !important;
-  }
-
-  .doc-slogan {
-    flex-basis: 210px !important;
+    align-items: center !important;
     gap: 6px !important;
-  }
-
-  .doc-slogan span {
-    font-size: 21px !important;
-  }
-
-  .doc-slogan svg {
-    height: 25px !important;
-    width: 25px !important;
+    color: #536273 !important;
+    font-size: 10.5px !important;
+    margin-top: 8px !important;
+    border-top: 1px solid #d7e1ea !important;
+    padding-top: 9px !important;
   }
 }
