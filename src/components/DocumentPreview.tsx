@@ -1,4 +1,4 @@
-import { CalendarDays, FileBadge2, MapPin, UserRound } from 'lucide-react';
+import { CalendarDays, FileBadge2, UserRound } from 'lucide-react';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { emptyText, formatColombianDate, formatTime12h } from '../utils/formatters';
 
@@ -111,10 +111,5 @@ export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
         <InfoRow label="Teléfono" value={data.declarant.phone} />
       </div>
     </DocumentSection>
-
-    <footer className="doc-footer">
-      <MapPin className="h-4 w-4" />
-      Esta declaración se diligencia con base en la información suministrada por el declarante y hace parte del soporte institucional de atención.
-    </footer>
   </article>
 );
