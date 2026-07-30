@@ -1,4 +1,4 @@
-import { CalendarDays, FileBadge2, MapPin, UserRound } from 'lucide-react';
+import { CalendarDays, FileBadge2, HeartPulse, Info, UserRound } from 'lucide-react';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { emptyText, formatColombianDate, formatTime12h } from '../utils/formatters';
 
@@ -113,8 +113,19 @@ export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
     </DocumentSection>
 
     <footer className="doc-footer">
-      <MapPin className="h-4 w-4" />
-      Esta declaración se diligencia con base en la información suministrada por el declarante y hace parte del soporte institucional de atención.
+      <div className="doc-note">
+        <span className="doc-note-icon">
+          <Info className="h-6 w-6" />
+        </span>
+        <p>
+          <strong>NOTA:</strong> La información aquí consignada corresponde a la declaración realizada por el paciente
+          o declarante, según los hechos ocurridos.
+        </p>
+      </div>
+      <div className="doc-slogan">
+        <span>Comprometidos con tu salud</span>
+        <HeartPulse className="h-8 w-8" />
+      </div>
     </footer>
   </article>
 );
