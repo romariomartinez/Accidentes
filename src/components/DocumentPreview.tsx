@@ -1,4 +1,4 @@
-import { CalendarDays, FileBadge2, HeartPulse, MapPin, UserRound } from 'lucide-react';
+import { CalendarDays, FileBadge2, MapPin, UserRound } from 'lucide-react';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { emptyText, formatColombianDate, formatTime12h } from '../utils/formatters';
 
@@ -111,11 +111,6 @@ export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
         <InfoRow label="Teléfono" value={data.declarant.phone} />
       </div>
     </DocumentSection>
-
-    <div className="doc-watermark-slogan">
-      <span>Comprometidos con tu salud</span>
-      <HeartPulse className="h-10 w-10" />
-    </div>
 
     <footer className="doc-footer">
       <MapPin className="h-4 w-4" />

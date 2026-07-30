@@ -220,30 +220,6 @@ body {
   font-size: 10.5px;
 }
 
-.doc-watermark-slogan {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin: 28px 0 14px;
-  color: rgba(4, 120, 125, 0.18);
-  pointer-events: none;
-  user-select: none;
-}
-
-.doc-watermark-slogan span {
-  font-family: "Segoe Script", "Brush Script MT", cursive;
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.doc-watermark-slogan svg {
-  height: 42px;
-  width: 42px;
-}
-
 .doc-footer {
   break-inside: avoid;
   page-break-inside: avoid;
@@ -293,10 +269,6 @@ body {
     border-right: 0;
   }
 
-  .doc-watermark-slogan span {
-    font-size: 26px;
-    white-space: normal;
-  }
 }
 
 @page {
@@ -468,20 +440,6 @@ body {
     font-size: 10.5px !important;
     line-height: 1.18 !important;
     margin-top: 2px !important;
-  }
-
-  .doc-watermark-slogan {
-    margin: 34px 0 18px !important;
-    color: rgba(4, 120, 125, 0.14) !important;
-  }
-
-  .doc-watermark-slogan span {
-    font-size: 34px !important;
-  }
-
-  .doc-watermark-slogan svg {
-    height: 38px !important;
-    width: 38px !important;
   }
 
   .doc-footer {
