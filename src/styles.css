@@ -182,6 +182,8 @@ body {
   line-height: 1.3;
   text-align: justify;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .doc-grid {
@@ -421,5 +423,7 @@ body {
     font-size: 10.5px !important;
     line-height: 1.18 !important;
     margin-top: 2px !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
   }
 }
