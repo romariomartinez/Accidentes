@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { createDeclarationNumber, todayInputDate } from '../utils/formatters';
@@ -6,6 +6,7 @@ import { generateStory } from '../utils/storyGenerator';
 import { useLocalStorage } from './useLocalStorage';
 
 const storageKey = 'traffic-accident-declaration-draft';
+const driverFledText = 'Conductor huyó del lugar de los hechos; se desconocen sus datos personales y paradero';
 
 const isTodayDeclarationNumber = (value: string, date: string): boolean => {
   const compactDate = date.replace(/-/g, '');
@@ -101,7 +102,7 @@ export const createExampleDeclaration = (): TrafficAccidentDeclaration => {
     fled: true,
     documentType: 'CC',
     documentNumber: 'No conocida',
-    fullName: 'Conductor huyó del lugar de los hechos; se desconocen sus datos personales y paradero',
+    fullName: driverFledText,
     address: 'No conocida',
     phone: 'No conocido',
   };
@@ -150,6 +151,8 @@ export const useDeclarationForm = () => {
   const ownerUnknown = form.watch('owner.unknown');
   const declarantRole = form.watch('declarant.role');
   const victim = form.watch('victim');
+  const previousDriverFled = useRef(driverFled);
+  const previousOwnerUnknown = useRef(ownerUnknown);
 
   useEffect(() => {
     const today = todayInputDate();
@@ -191,19 +194,41 @@ export const useDeclarationForm = () => {
   }, [emptyDeclaration.metadata, form, setValue]);
 
   useEffect(() => {
-    if (!driverFled) return;
-    form.setValue('driver.fullName', 'Conductor huyó del lugar de los hechos; se desconocen sus datos personales y paradero');
-    form.setValue('driver.documentNumber', 'No conocida');
-    form.setValue('driver.address', 'No conocida');
-    form.setValue('driver.phone', 'No conocido');
+    if (driverFled) {
+      form.setValue('driver.fullName', driverFledText);
+      form.setValue('driver.documentNumber', 'No conocida');
+      form.setValue('driver.address', 'No conocida');
+      form.setValue('driver.phone', 'No conocido');
+      previousDriverFled.current = driverFled;
+      return;
+    }
+
+    if (previousDriverFled.current) {
+      form.setValue('driver.fullName', '');
+      form.setValue('driver.documentNumber', '');
+      form.setValue('driver.address', '');
+      form.setValue('driver.phone', '');
+    }
+    previousDriverFled.current = driverFled;
   }, [driverFled, form]);
 
   useEffect(() => {
-    if (!ownerUnknown) return;
-    form.setValue('owner.fullName', 'No conocido');
-    form.setValue('owner.documentNumber', 'No conocido');
-    form.setValue('owner.address', 'No conocido');
-    form.setValue('owner.phone', 'No conocido');
+    if (ownerUnknown) {
+      form.setValue('owner.fullName', 'No conocido');
+      form.setValue('owner.documentNumber', 'No conocido');
+      form.setValue('owner.address', 'No conocido');
+      form.setValue('owner.phone', 'No conocido');
+      previousOwnerUnknown.current = ownerUnknown;
+      return;
+    }
+
+    if (previousOwnerUnknown.current) {
+      form.setValue('owner.fullName', '');
+      form.setValue('owner.documentNumber', '');
+      form.setValue('owner.address', '');
+      form.setValue('owner.phone', '');
+    }
+    previousOwnerUnknown.current = ownerUnknown;
   }, [form, ownerUnknown]);
 
   useEffect(() => {
