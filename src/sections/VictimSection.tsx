@@ -44,19 +44,6 @@ export const VictimSection = ({ register, errors }: Props) => (
           event.currentTarget.value = normalizePhone(event.currentTarget.value);
         }}
       />
-      <FormField label="Edad" name="victim.age" register={register} type="number" />
-      <FormField
-        label="Sexo"
-        name="victim.sex"
-        register={register}
-        as="select"
-        options={[
-          { value: '', label: 'Seleccionar' },
-          { value: 'Femenino', label: 'Femenino' },
-          { value: 'Masculino', label: 'Masculino' },
-          { value: 'Otro', label: 'Otro' },
-        ]}
-      />
     </div>
   </SectionCard>
 );

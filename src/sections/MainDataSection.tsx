@@ -51,20 +51,10 @@ export const MainDataSection = ({ register, errors }: Props) => (
       <FormField label="Hora de egreso" name="accident.dischargeTime" register={register} type="time" />
       <FormField label="Tipo de vehículo involucrado" name="accident.vehicleType" register={register} />
       <FormField label="Placa" name="accident.licensePlate" register={register} />
-      <FormField label="Tipo de vía" name="accident.roadType" register={register} />
-      <div className="md:col-span-2">
-        <FormField
-          label="Observaciones adicionales"
-          name="accident.observations"
-          register={register}
-          as="textarea"
-          rows={2}
-        />
-      </div>
     </div>
     <div className="mt-4 flex items-center gap-2 rounded-md bg-teal-50 px-3 py-2 text-sm text-hospital-navy">
       <CalendarClock className="h-4 w-4 text-hospital-teal" />
-      La numeración y la fecha de registro se generan automáticamente, pero pueden ajustarse.
+      La numeración y la fecha de registro se generan automáticamente.
     </div>
   </SectionCard>
 );

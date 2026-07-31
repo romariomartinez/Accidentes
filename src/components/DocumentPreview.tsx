@@ -67,8 +67,6 @@ export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
         <InfoRow label="Fecha y hora de egreso" value={`${formatColombianDate(data.accident.dischargeDate)} ${formatTime12h(data.accident.dischargeTime)}`} />
         <InfoRow label="Vehículo involucrado" value={data.accident.vehicleType} />
         <InfoRow label="Placa" value={data.accident.licensePlate} />
-        <InfoRow label="Tipo de vía" value={data.accident.roadType} />
-        <InfoRow label="Observaciones" value={data.accident.observations} />
       </div>
     </DocumentSection>
 
@@ -79,7 +77,6 @@ export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
         <InfoRow label="Dirección" value={data.victim.address} />
         <InfoRow label="Municipio / Departamento" value={`${data.victim.municipality} / ${data.victim.department}`} />
         <InfoRow label="Teléfono" value={data.victim.phone} />
-        <InfoRow label="Edad / Sexo" value={`${data.victim.age} / ${data.victim.sex}`} />
       </div>
     </DocumentSection>
 

@@ -341,11 +341,12 @@ body {
 
   .doc-number span,
   .doc-cell span {
-    font-size: 10px !important;
+    font-size: 10.5px !important;
+    color: #102f4d !important;
   }
 
   .doc-number strong {
-    font-size: 13px !important;
+    font-size: 13.5px !important;
   }
 
   .doc-section {
@@ -386,7 +387,7 @@ body {
 
   .doc-section h3 {
     border-left-width: 4px !important;
-    font-size: 12px !important;
+    font-size: 12.5px !important;
     font-weight: 800 !important;
     margin-bottom: 3px !important;
     padding-left: 8px !important;
@@ -420,8 +421,10 @@ body {
 
   .doc-story,
   .doc-cell strong {
-    font-size: 10.5px !important;
-    line-height: 1.18 !important;
+    color: #071f36 !important;
+    font-size: 11.2px !important;
+    font-weight: 750 !important;
+    line-height: 1.24 !important;
     margin-top: 2px !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
