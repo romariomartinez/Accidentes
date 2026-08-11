@@ -7,10 +7,12 @@ import { DocumentPreview } from './components/DocumentPreview';
 import { FomagSignatureModule } from './components/FomagSignatureModule';
 import { PreviewModal } from './components/PreviewModal';
 import { useDeclarationForm } from './hooks/useDeclarationForm';
+import { useFomagSignatures } from './hooks/useFomagSignatures';
 import { usePrint } from './hooks/usePrint';
 
 const App = () => {
   const { form, data, savedAt, saveDraft, clearDraft, loadExample } = useDeclarationForm();
+  const fomag = useFomagSignatures();
   const { print } = usePrint();
   const [activeModule, setActiveModule] = useState<AppModule>('accident');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -24,11 +26,54 @@ const App = () => {
       setMissingFields(['Revise los campos obligatorios marcados en el formulario.']);
       return;
     }
+    setMissingFields([]);
     print(form.getValues(), setMissingFields);
+  };
+
+  const handleFomagPrint = async () => {
+    const valid = await fomag.form.trigger();
+    if (!valid) {
+      setMissingFields(['Revise los campos obligatorios marcados en el formulario FOMAG.']);
+      return;
+    }
+    setMissingFields([]);
+    document.body.classList.add('print-fomag');
+    window.print();
+    window.setTimeout(() => document.body.classList.remove('print-fomag'), 500);
+  };
+
+  const handleHeaderSave = () => {
+    if (activeModule === 'accident') {
+      saveDraft();
+      return;
+    }
+    fomag.saveDraft();
+  };
+
+  const handleHeaderPreview = () => {
+    if (activeModule === 'accident') {
+      setPreviewOpen(true);
+      return;
+    }
+    document.getElementById('fomag-print-document')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleHeaderPrint = () => {
+    if (activeModule === 'accident') {
+      handlePrint();
+      return;
+    }
+    handleFomagPrint();
   };
 
   const confirmClear = () => {
     clearDraft();
+    setClearOpen(false);
+    setMissingFields([]);
+  };
+
+  const confirmFomagClear = () => {
+    fomag.clearDraft();
     setClearOpen(false);
     setMissingFields([]);
   };
@@ -44,16 +89,16 @@ const App = () => {
   return (
     <div className="min-h-screen bg-hospital-bg text-slate-800">
       <AppHeader
-        savedAt={savedAt}
+        savedAt={activeModule === 'accident' ? savedAt : fomag.savedAt}
         activeModule={activeModule}
         onModuleChange={setActiveModule}
-        onSave={saveDraft}
+        onSave={handleHeaderSave}
         onClear={() => setClearOpen(true)}
-        onPreview={() => setPreviewOpen(true)}
-        onPrint={handlePrint}
+        onPreview={handleHeaderPreview}
+        onPrint={handleHeaderPrint}
       />
 
-      {activeModule === 'accident' && missingFields.length ? (
+      {missingFields.length ? (
         <div className="app-chrome mx-auto mt-4 max-w-[1500px] px-4">
           <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -79,17 +124,24 @@ const App = () => {
           </aside>
         </main>
       ) : (
-        <FomagSignatureModule />
+        <FomagSignatureModule
+          form={fomag.form}
+          data={fomag.data}
+          records={fomag.records}
+          onSaveRecord={fomag.saveRecord}
+          onRemoveRecord={fomag.removeRecord}
+          onPrint={handleFomagPrint}
+        />
       )}
 
       <PreviewModal open={previewOpen} data={data} onClose={requestClosePreview} onPrint={handlePrint} />
       <ConfirmDialog
         open={clearOpen}
-        title="Limpiar formulario"
-        message="Se borrara el borrador local y se reiniciara la declaracion."
+        title={activeModule === 'accident' ? 'Limpiar formulario' : 'Limpiar FOMAG'}
+        message={activeModule === 'accident' ? 'Se borrara el borrador local y se reiniciara la declaracion.' : 'Se borrara el borrador FOMAG y se iniciara un consentimiento nuevo.'}
         confirmText="Limpiar"
         onCancel={() => setClearOpen(false)}
-        onConfirm={confirmClear}
+        onConfirm={activeModule === 'accident' ? confirmClear : confirmFomagClear}
       />
       <ConfirmDialog
         open={closeOpen}

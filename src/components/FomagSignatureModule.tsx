@@ -1,6 +1,6 @@
-import { CalendarDays, FileDown, ListChecks, Printer, Save, Trash2, UserRound } from 'lucide-react';
+import { CalendarDays, FileDown, ListChecks, Save, Trash2, UserRound } from 'lucide-react';
 import { Controller } from 'react-hook-form';
-import { useFomagSignatures } from '../hooks/useFomagSignatures';
+import { UseFormReturn } from 'react-hook-form';
 import { FomagSignatureFormData, FomagSignatureRecord } from '../types/fomag';
 import { emptyText, formatColombianDate, normalizeDocument, normalizePhone } from '../utils/formatters';
 import { FormField } from './FormField';
@@ -101,23 +101,28 @@ const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatu
   </article>
 );
 
-export const FomagSignatureModule = () => {
-  const { form, records, saveRecord, resetForm, removeRecord } = useFomagSignatures();
+interface FomagSignatureModuleProps {
+  form: UseFormReturn<FomagSignatureFormData>;
+  data: FomagSignatureFormData;
+  records: FomagSignatureRecord[];
+  onSaveRecord: () => Promise<boolean>;
+  onRemoveRecord: (id: string) => void;
+  onPrint: () => void;
+}
+
+export const FomagSignatureModule = ({
+  form,
+  data,
+  records,
+  onSaveRecord,
+  onRemoveRecord,
+  onPrint,
+}: FomagSignatureModuleProps) => {
   const {
     register,
     control,
-    watch,
     formState: { errors },
   } = form;
-  const data = watch();
-
-  const printCurrent = async () => {
-    const valid = await form.trigger();
-    if (!valid) return;
-    document.body.classList.add('print-fomag');
-    window.print();
-    window.setTimeout(() => document.body.classList.remove('print-fomag'), 500);
-  };
 
   return (
     <main className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 xl:grid-cols-[minmax(540px,0.96fr)_minmax(520px,1.04fr)]">
@@ -128,16 +133,9 @@ export const FomagSignatureModule = () => {
             Modulo de consentimientos FOMAG
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="btn-secondary" onClick={resetForm}>
-              Limpiar
-            </button>
-            <button type="button" className="btn-primary" onClick={saveRecord}>
+            <button type="button" className="btn-primary" onClick={onSaveRecord}>
               <Save className="h-4 w-4" />
               Guardar registro
-            </button>
-            <button type="button" className="btn-green" onClick={printCurrent}>
-              <Printer className="h-4 w-4" />
-              Imprimir
             </button>
           </div>
         </div>
@@ -207,7 +205,7 @@ export const FomagSignatureModule = () => {
                   <p className="text-sm font-bold text-hospital-navy">{record.patientName}</p>
                   <p className="text-xs text-slate-500">{record.recordNumber} - {record.documentType} {record.documentNumber} - {formatColombianDate(record.serviceDate)}</p>
                 </div>
-                <button type="button" className="btn-ghost min-h-8 px-2 py-1 text-xs" onClick={() => removeRecord(record.id)}>
+                <button type="button" className="btn-ghost min-h-8 px-2 py-1 text-xs" onClick={() => onRemoveRecord(record.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                   Quitar
                 </button>
@@ -223,7 +221,7 @@ export const FomagSignatureModule = () => {
             <h2 className="text-base font-semibold text-hospital-navy">Vista previa FOMAG</h2>
             <p className="text-sm text-slate-500">Consentimiento listo para imprimir y firmar a mano</p>
           </div>
-          <button type="button" className="btn-green" onClick={printCurrent}>
+          <button type="button" className="btn-green" onClick={onPrint}>
             <FileDown className="h-4 w-4" />
             PDF
           </button>

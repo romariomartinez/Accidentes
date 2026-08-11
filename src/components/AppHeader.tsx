@@ -38,11 +38,7 @@ export const AppHeader = ({
               : 'Genere el consentimiento para imprimir y firmar a mano'}
           </p>
           <p className="mt-1 text-xs font-medium text-hospital-green">
-            {activeModule === 'accident'
-              ? savedAt
-                ? `Cambios guardados ${new Date(savedAt).toLocaleTimeString('es-CO')}`
-                : 'Borrador listo'
-              : 'Modulo independiente'}
+            {savedAt ? `Cambios guardados ${new Date(savedAt).toLocaleTimeString('es-CO')}` : 'Borrador listo'}
           </p>
         </div>
       </div>
@@ -65,19 +61,15 @@ export const AppHeader = ({
           </button>
         </div>
 
-        {activeModule === 'accident' ? (
-          <>
-            <button type="button" onClick={onSave} className="btn-secondary">
-              <Save className="h-4 w-4" />
-              Guardar borrador
-            </button>
-            <button type="button" onClick={onClear} className="btn-ghost">
-              <Eraser className="h-4 w-4" />
-              Limpiar
-            </button>
-            <PrintActions onPreview={onPreview} onPrint={onPrint} />
-          </>
-        ) : null}
+        <button type="button" onClick={onSave} className="btn-secondary">
+          <Save className="h-4 w-4" />
+          Guardar borrador
+        </button>
+        <button type="button" onClick={onClear} className="btn-ghost">
+          <Eraser className="h-4 w-4" />
+          Limpiar
+        </button>
+        <PrintActions onPreview={onPreview} onPrint={onPrint} />
       </div>
     </div>
   </header>
