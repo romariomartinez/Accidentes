@@ -14,7 +14,7 @@ const documentTypes = [
 ];
 
 const consentText = (data: FomagSignatureFormData | FomagSignatureRecord) =>
-  `El usuario ${emptyText(data.patientName)}, identificado con ${data.documentType} ${emptyText(data.documentNumber)}, firma el presente consentimiento y deja constancia de que recibio atencion en ${emptyText(data.serviceDescription)} el dia ${formatColombianDate(data.serviceDate)}.`;
+  `El usuario ${emptyText(data.patientName)}, identificado con ${data.documentType} ${emptyText(data.documentNumber)}, firma el presente consentimiento y deja constancia de que recibio atencion en el Hospital Camilo Villazon Pumarejo de Pueblo Bello, Cesar, por concepto de ${emptyText(data.serviceDescription)}, el dia ${formatColombianDate(data.serviceDate)}.`;
 
 const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatureRecord }) => (
   <article className="fomag-sheet" id="fomag-print-document">
