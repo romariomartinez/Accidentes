@@ -192,27 +192,25 @@ body {
   grid-column: span 2;
 }
 
-.fomag-signature-box {
-  display: flex;
-  min-height: 170px;
-  align-items: center;
-  justify-content: center;
+.fomag-consent-text {
+  margin: 0;
   border: 1px solid #d7e1ea;
   border-radius: 7px;
-  background: #fff;
   padding: 12px;
-}
-
-.fomag-signature-box img {
-  max-height: 145px;
-  max-width: 100%;
-  object-fit: contain;
-}
-
-.fomag-signature-box span {
-  color: #64748b;
+  color: #071f36;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
+  line-height: 1.45;
+  text-align: justify;
+}
+
+.fomag-manual-signature {
+  margin-top: 28px;
+}
+
+.fomag-signature-line {
+  height: 76px;
+  border-bottom: 2px solid #163a5f;
 }
 
 .fomag-signature-label {
@@ -553,11 +551,17 @@ body {
     font-size: 11px !important;
   }
 
-  .fomag-signature-box {
-    min-height: 165px !important;
+  .fomag-consent-text {
+    padding: 10px !important;
+    font-size: 12.8px !important;
+    line-height: 1.42 !important;
   }
 
-  .fomag-signature-box img {
-    max-height: 140px !important;
+  .fomag-manual-signature {
+    margin-top: 28px !important;
+  }
+
+  .fomag-signature-line {
+    height: 72px !important;
   }
 }

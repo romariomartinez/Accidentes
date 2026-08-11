@@ -35,7 +35,7 @@ export const AppHeader = ({
           <p className="text-sm text-slate-600">
             {activeModule === 'accident'
               ? 'Diligencie la informacion y revise el documento antes de imprimir'
-              : 'Registre la firma solicitada para soporte de facturacion'}
+              : 'Genere el consentimiento para imprimir y firmar a mano'}
           </p>
           <p className="mt-1 text-xs font-medium text-hospital-green">
             {activeModule === 'accident'

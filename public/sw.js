@@ -1,4 +1,4 @@
-const CACHE_NAME = 'accidentes-app-v3';
+const CACHE_NAME = 'accidentes-app-v4';
 const APP_SHELL = ['/', '/manifest.webmanifest', '/hospital-logo.bmp', '/pwa-icon-192.png', '/pwa-icon-512.png'];
 
 self.addEventListener('install', (event) => {

@@ -4,7 +4,6 @@ import { useFomagSignatures } from '../hooks/useFomagSignatures';
 import { FomagSignatureFormData, FomagSignatureRecord } from '../types/fomag';
 import { emptyText, formatColombianDate, normalizeDocument, normalizePhone } from '../utils/formatters';
 import { FormField } from './FormField';
-import { SignaturePad } from './SignaturePad';
 
 const documentTypes = [
   { value: 'CC', label: 'CC' },
@@ -14,13 +13,16 @@ const documentTypes = [
   { value: 'Otro', label: 'Otro' },
 ];
 
+const consentText = (data: FomagSignatureFormData | FomagSignatureRecord) =>
+  `El usuario ${emptyText(data.patientName)}, identificado con ${data.documentType} ${emptyText(data.documentNumber)}, firma el presente consentimiento y deja constancia de que recibio atencion en ${emptyText(data.serviceDescription)} el dia ${formatColombianDate(data.serviceDate)}.`;
+
 const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatureRecord }) => (
   <article className="fomag-sheet" id="fomag-print-document">
     <header className="fomag-doc-header">
       <div className="doc-logo">
         <img src="/hospital-logo.bmp" alt="Hospital Camilo Villazon Pumarejo" />
       </div>
-      <h2>CONSTANCIA DE FIRMA USUARIO FOMAG</h2>
+      <h2>CONSENTIMIENTO USUARIO FOMAG</h2>
       <div className="doc-number">
         <span>No.</span>
         <strong>{emptyText(data.recordNumber)}</strong>
@@ -38,7 +40,7 @@ const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatu
       </div>
       <div>
         <ListChecks className="h-4 w-4" />
-        Factura: {emptyText(data.invoiceNumber)}
+        Entidad: FOMAG
       </div>
     </div>
 
@@ -61,22 +63,22 @@ const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatu
     </section>
 
     <section className="doc-section">
-      <h3>Datos del servicio</h3>
+      <h3>Datos de la atencion</h3>
       <div className="doc-grid">
         <div className="doc-cell">
-          <span>Fecha del servicio</span>
+          <span>Fecha de atencion</span>
           <strong>{formatColombianDate(data.serviceDate)}</strong>
-        </div>
-        <div className="doc-cell">
-          <span>Factura / cuenta</span>
-          <strong>{emptyText(data.invoiceNumber)}</strong>
         </div>
         <div className="doc-cell">
           <span>Entidad</span>
           <strong>FOMAG</strong>
         </div>
+        <div className="doc-cell">
+          <span>Registro</span>
+          <strong>{emptyText(data.recordNumber)}</strong>
+        </div>
         <div className="doc-cell doc-cell-wide">
-          <span>Servicio recibido</span>
+          <span>Atencion recibida</span>
           <strong>{emptyText(data.serviceDescription)}</strong>
         </div>
         <div className="doc-cell">
@@ -87,36 +89,31 @@ const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatu
     </section>
 
     <section className="doc-section">
-      <h3>Firma</h3>
-      <div className="fomag-signature-box">
-        {data.signature ? <img src={data.signature} alt="Firma del usuario FOMAG" /> : <span>Sin firma registrada</span>}
-      </div>
+      <h3>Consentimiento</h3>
+      <p className="fomag-consent-text">{consentText(data)}</p>
+    </section>
+
+    <section className="doc-section fomag-manual-signature">
+      <h3>Firma manual</h3>
+      <div className="fomag-signature-line" />
       <p className="fomag-signature-label">Firma del usuario o acudiente</p>
     </section>
   </article>
 );
 
 export const FomagSignatureModule = () => {
-  const {
-    form,
-    records,
-    saveRecord,
-    resetForm,
-    removeRecord,
-  } = useFomagSignatures();
+  const { form, records, saveRecord, resetForm, removeRecord } = useFomagSignatures();
   const {
     register,
     control,
-    setValue,
     watch,
     formState: { errors },
   } = form;
   const data = watch();
-  const signature = watch('signature');
 
   const printCurrent = async () => {
     const valid = await form.trigger();
-    if (!valid || !form.getValues('signature')) return;
+    if (!valid) return;
     document.body.classList.add('print-fomag');
     window.print();
     window.setTimeout(() => document.body.classList.remove('print-fomag'), 500);
@@ -128,7 +125,7 @@ export const FomagSignatureModule = () => {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-teal-100 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-semibold text-hospital-navy">
             <ListChecks className="h-5 w-5 text-hospital-teal" />
-            Modulo de firmas FOMAG
+            Modulo de consentimientos FOMAG
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn-secondary" onClick={resetForm}>
@@ -136,7 +133,7 @@ export const FomagSignatureModule = () => {
             </button>
             <button type="button" className="btn-primary" onClick={saveRecord}>
               <Save className="h-4 w-4" />
-              Guardar firma
+              Guardar registro
             </button>
             <button type="button" className="btn-green" onClick={printCurrent}>
               <Printer className="h-4 w-4" />
@@ -183,17 +180,16 @@ export const FomagSignatureModule = () => {
                 event.currentTarget.value = normalizePhone(event.currentTarget.value);
               }}
             />
-            <FormField<FomagSignatureFormData> label="Fecha del servicio" name="serviceDate" register={register} type="date" required />
-            <FormField<FomagSignatureFormData> label="Factura / cuenta" name="invoiceNumber" register={register} required />
+            <FormField<FomagSignatureFormData> label="Fecha de atencion" name="serviceDate" register={register} type="date" required />
             <div className="md:col-span-2">
               <FormField<FomagSignatureFormData>
-                label="Servicio recibido"
+                label="Atencion recibida"
                 name="serviceDescription"
                 register={register}
                 as="textarea"
                 rows={3}
                 required
-                placeholder="Ejemplo: Consulta, procedimiento, medicamento, apoyo diagnostico..."
+                placeholder="Ejemplo: Consulta medica, procedimiento, medicamento, apoyo diagnostico..."
               />
             </div>
             <div className="md:col-span-2">
@@ -202,20 +198,8 @@ export const FomagSignatureModule = () => {
           </div>
         </section>
 
-        <Controller
-          control={control}
-          name="signature"
-          rules={{ required: 'La firma es obligatoria' }}
-          render={({ field }) => (
-            <div>
-              <SignaturePad value={field.value} onChange={(value) => setValue('signature', value, { shouldDirty: true, shouldValidate: true })} />
-              {errors.signature ? <span className="mt-2 block text-xs font-medium text-red-600">{errors.signature.message}</span> : null}
-            </div>
-          )}
-        />
-
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-hospital-navy">Firmas guardadas</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-hospital-navy">Registros guardados</h2>
           <div className="space-y-2">
             {records.length ? records.map((record) => (
               <div key={record.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 p-3">
@@ -228,7 +212,7 @@ export const FomagSignatureModule = () => {
                   Quitar
                 </button>
               </div>
-            )) : <p className="text-sm text-slate-500">Todavia no hay firmas guardadas.</p>}
+            )) : <p className="text-sm text-slate-500">Todavia no hay registros guardados.</p>}
           </div>
         </section>
       </form>
@@ -237,7 +221,7 @@ export const FomagSignatureModule = () => {
         <div className="app-chrome mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-hospital-navy">Vista previa FOMAG</h2>
-            <p className="text-sm text-slate-500">Constancia lista para imprimir o guardar PDF</p>
+            <p className="text-sm text-slate-500">Consentimiento listo para imprimir y firmar a mano</p>
           </div>
           <button type="button" className="btn-green" onClick={printCurrent}>
             <FileDown className="h-4 w-4" />
@@ -245,7 +229,7 @@ export const FomagSignatureModule = () => {
           </button>
         </div>
         <div className="fomag-print-area">
-          <FomagPrintSheet data={{ ...data, signature }} />
+          <FomagPrintSheet data={data} />
         </div>
       </aside>
     </main>

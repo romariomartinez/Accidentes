@@ -25,10 +25,8 @@ const createEmptyFomagForm = (): FomagSignatureFormData => ({
   documentNumber: '',
   phone: '',
   serviceDate: todayInputDate(),
-  invoiceNumber: '',
   serviceDescription: '',
   observation: '',
-  signature: '',
 });
 
 export const useFomagSignatures = () => {
@@ -46,7 +44,7 @@ export const useFomagSignatures = () => {
   const saveRecord = async () => {
     const valid = await form.trigger();
     const data = form.getValues();
-    if (!valid || !data.signature) return false;
+    if (!valid) return false;
 
     const record: FomagSignatureRecord = {
       ...data,
