@@ -13,8 +13,21 @@ const documentTypes = [
   { value: 'Otro', label: 'Otro' },
 ];
 
-const consentText = (data: FomagSignatureFormData | FomagSignatureRecord) =>
-  `El usuario ${emptyText(data.patientName)}, identificado con ${data.documentType} ${emptyText(data.documentNumber)}, firma el presente consentimiento y deja constancia de que recibio atencion en el Hospital Camilo Villazon Pumarejo de Pueblo Bello, Cesar, por concepto de ${emptyText(data.serviceDescription)}, el dia ${formatColombianDate(data.serviceDate)}.`;
+const ConsentText = ({ data }: { data: FomagSignatureFormData | FomagSignatureRecord }) => (
+  <p className="fomag-consent-text">
+    <span>El usuario </span>
+    <strong>{emptyText(data.patientName)}</strong>
+    <span>, identificado con </span>
+    <strong>{data.documentType} {emptyText(data.documentNumber)}</strong>
+    <span>, firma el presente consentimiento y deja constancia de que recibio atencion en el </span>
+    <strong>Hospital Camilo Villazon Pumarejo de Pueblo Bello, Cesar</strong>
+    <span>, por concepto de </span>
+    <strong>{emptyText(data.serviceDescription)}</strong>
+    <span>, el dia </span>
+    <strong>{formatColombianDate(data.serviceDate)}</strong>
+    <span>.</span>
+  </p>
+);
 
 const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatureRecord }) => (
   <article className="fomag-sheet" id="fomag-print-document">
@@ -90,7 +103,7 @@ const FomagPrintSheet = ({ data }: { data: FomagSignatureFormData | FomagSignatu
 
     <section className="doc-section">
       <h3>Consentimiento</h3>
-      <p className="fomag-consent-text">{consentText(data)}</p>
+      <ConsentText data={data} />
     </section>
 
     <section className="doc-section fomag-manual-signature">

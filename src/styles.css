@@ -198,11 +198,16 @@ body {
   border: 1px solid #9fb5c6;
   border-radius: 7px;
   padding: 12px;
-  color: #050f1a;
+  color: #506173;
   font-size: 13.8px;
-  font-weight: 850;
+  font-weight: 600;
   line-height: 1.45;
   text-align: justify;
+}
+
+.fomag-consent-text strong {
+  color: #050f1a;
+  font-weight: 950;
 }
 
 .fomag-manual-signature {
