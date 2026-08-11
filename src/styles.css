@@ -150,7 +150,7 @@ body {
 .doc-number span,
 .doc-cell span {
   display: block;
-  color: #1f3448;
+  color: #5f7286;
   font-size: 10px;
   font-weight: 850;
   text-transform: uppercase;
@@ -183,7 +183,7 @@ body {
   border: 1px solid #9fb5c6;
   border-radius: 7px;
   background: #fff;
-  color: #05182a;
+  color: #123a5a;
   padding: 8px;
   font-size: 11px;
   font-weight: 900;
@@ -198,7 +198,7 @@ body {
   border: 1px solid #9fb5c6;
   border-radius: 7px;
   padding: 12px;
-  color: #05182a;
+  color: #050f1a;
   font-size: 13.8px;
   font-weight: 850;
   line-height: 1.45;
@@ -217,7 +217,7 @@ body {
 .fomag-signature-label {
   margin: 8px 0 0;
   text-align: center;
-  color: #05182a;
+  color: #123a5a;
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
@@ -233,7 +233,7 @@ body {
 .doc-section h3 {
   margin: 0 0 5px;
   border-left: 5px solid #008c8f;
-  color: #05182a;
+  color: #007f83;
   font-size: 12px;
   font-weight: 950;
   letter-spacing: 0.04em;
@@ -278,7 +278,7 @@ body {
 .doc-cell strong {
   display: block;
   margin-top: 2px;
-  color: #05182a;
+  color: #050f1a;
   font-size: 11px;
   font-weight: 900;
   line-height: 1.18;
