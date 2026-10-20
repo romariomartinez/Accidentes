@@ -157,7 +157,7 @@ export const FomagSignatureModule = ({
           <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-hospital-navy">Datos principales</h2>
           <div className="grid gap-4 md:grid-cols-2">
             <FormField<FomagSignatureFormData> label="Numero de registro" name="recordNumber" register={register} readOnly />
-            <FormField<FomagSignatureFormData> label="Fecha de registro" name="registerDate" register={register} type="date" readOnly />
+            <FormField<FomagSignatureFormData> label="Fecha de registro" name="registerDate" register={register} type="date" />
             <FormField<FomagSignatureFormData> label="Nombre del usuario" name="patientName" register={register} required />
             <Controller
               control={control}

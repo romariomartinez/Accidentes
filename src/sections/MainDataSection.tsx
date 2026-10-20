@@ -18,7 +18,7 @@ export const MainDataSection = ({ register, errors }: Props) => (
   <SectionCard title="Datos principales" icon={<MapPinned className="h-4 w-4" />}>
     <div className="grid gap-4 md:grid-cols-2">
       <FormField label="Número de declaración" name="accident.declarationNumber" register={register} readOnly />
-      <FormField label="Fecha de registro" name="accident.registrationDate" register={register} type="date" readOnly />
+      <FormField label="Fecha de registro" name="accident.registrationDate" register={register} type="date" />
       <FormField label="Víctima en calidad de" name="accident.victimRole" register={register} as="select" options={victimRoles} />
       <FormField
         label="Lugar del accidente"
@@ -54,7 +54,7 @@ export const MainDataSection = ({ register, errors }: Props) => (
     </div>
     <div className="mt-4 flex items-center gap-2 rounded-md bg-teal-50 px-3 py-2 text-sm text-hospital-navy">
       <CalendarClock className="h-4 w-4 text-hospital-teal" />
-      La numeración y la fecha de registro se generan automáticamente.
+      La numeración se genera automáticamente. Puede modificar la fecha de registro.
     </div>
   </SectionCard>
 );

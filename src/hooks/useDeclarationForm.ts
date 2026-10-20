@@ -8,11 +8,6 @@ import { useLocalStorage } from './useLocalStorage';
 const storageKey = 'traffic-accident-declaration-draft';
 const driverFledText = 'Conductor huyó del lugar de los hechos; se desconocen sus datos personales y paradero';
 
-const isTodayDeclarationNumber = (value: string, date: string): boolean => {
-  const compactDate = date.replace(/-/g, '');
-  return new RegExp(`^DAT-${compactDate}-\\d{2}$`).test(value);
-};
-
 export const createEmptyDeclaration = (): TrafficAccidentDeclaration => ({
   accident: {
     declarationNumber: createDeclarationNumber(),
@@ -153,27 +148,6 @@ export const useDeclarationForm = () => {
   const victim = form.watch('victim');
   const previousDriverFled = useRef(driverFled);
   const previousOwnerUnknown = useRef(ownerUnknown);
-
-  useEffect(() => {
-    const today = todayInputDate();
-    const current = form.getValues();
-    const needsCurrentDate = current.accident.registrationDate !== today;
-    const needsCurrentNumber = !isTodayDeclarationNumber(current.accident.declarationNumber, today);
-
-    if (!needsCurrentDate && !needsCurrentNumber) return;
-
-    const nextValue: TrafficAccidentDeclaration = {
-      ...current,
-      accident: {
-        ...current.accident,
-        registrationDate: today,
-        declarationNumber: createDeclarationNumber(),
-      },
-    };
-
-    form.reset(nextValue);
-    setValue(nextValue);
-  }, [form, setValue]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
