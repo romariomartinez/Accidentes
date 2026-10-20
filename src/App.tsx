@@ -47,11 +47,13 @@ const App = () => {
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
   const [busy, setBusy] = useState(false);
+  const [dictating, setDictating] = useState(false);
   const [notice, setNotice] = useState('');
   const [recordToOpen, setRecordToOpen] = useState<HistoryRecord | null>(null);
   const busyRef = useRef(false);
 
   const runDocumentAction = async (module: HistoryModule, action: 'save' | 'print' | 'pdf'): Promise<boolean> => {
+    if (dictating) { setMissingFields(['Detenga el dictado y revise el relato antes de guardar o imprimir.']); return false; }
     if (busyRef.current) return false;
     busyRef.current = true; setBusy(true); setMissingFields([]); setNotice('');
     try {
@@ -161,7 +163,8 @@ const App = () => {
         onPrint={handleHeaderPrint}
         onPdf={() => { if (activeModule !== 'history') void runDocumentAction(activeModule, 'pdf'); }}
         onArchive={() => { if (activeModule !== 'history') void runDocumentAction(activeModule, 'save'); }}
-        busy={busy}
+        busy={busy || dictating}
+        dictating={dictating}
       />
 
       {activeModule !== 'history' && (busy || notice) ? <div className="app-chrome mx-auto max-w-[1500px] px-4 pt-4"><p role="status" className="rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm text-hospital-navy">{busy ? 'Preparando documento…' : notice}</p></div> : null}
@@ -184,7 +187,7 @@ const App = () => {
       ) : <fieldset disabled={busy} className="contents">
       {activeModule === 'accident' ? (
         <main className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 xl:grid-cols-[minmax(540px,0.96fr)_minmax(520px,1.04fr)]">
-          <AccidentForm form={form} />
+          <AccidentForm form={form} onDictationChange={setDictating} />
           <aside className="preview-pane">
             <div className="app-chrome mb-3 flex items-center justify-between">
               <div>

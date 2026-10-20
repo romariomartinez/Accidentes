@@ -9,9 +9,10 @@ import { VictimSection } from '../sections/VictimSection';
 
 interface Props {
   form: UseFormReturn<TrafficAccidentDeclaration>;
+  onDictationChange: (active: boolean) => void;
 }
 
-export const AccidentForm = ({ form }: Props) => {
+export const AccidentForm = ({ form, onDictationChange }: Props) => {
   const {
     register,
     formState: { errors },
@@ -29,6 +30,7 @@ export const AccidentForm = ({ form }: Props) => {
         setValue={setValue}
         getValues={getValues}
         storyLength={watch('accident.story')?.length ?? 0}
+        onDictationChange={onDictationChange}
       />
       <VictimSection register={register} errors={errors} />
       <DriverSection register={register} fled={watch('driver.fled')} />

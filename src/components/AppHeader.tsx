@@ -14,6 +14,7 @@ interface AppHeaderProps {
   onPdf: () => void;
   onArchive: () => void;
   busy: boolean;
+  dictating?: boolean;
 }
 
 const modules = [
@@ -27,7 +28,7 @@ const titles: Record<AppModule, string> = {
   history: 'Historial de documentos',
 };
 
-export const AppHeader = ({ savedAt, activeModule, onModuleChange, onSave, onClear, onPreview, onPrint, onPdf, onArchive, busy }: AppHeaderProps) => {
+export const AppHeader = ({ savedAt, activeModule, onModuleChange, onSave, onClear, onPreview, onPrint, onPdf, onArchive, busy, dictating = false }: AppHeaderProps) => {
   const menu = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     const outside = (event: PointerEvent) => {
@@ -78,7 +79,7 @@ export const AppHeader = ({ savedAt, activeModule, onModuleChange, onSave, onCle
           <h1 className="text-base font-semibold tracking-tight text-hospital-navy md:text-lg">{titles[activeModule]}</h1>
           {activeModule !== 'history' ? (
             <p className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500" title={savedAt ? `Último guardado local: ${new Date(savedAt).toLocaleTimeString('es-CO')}` : undefined}>
-              <Check className="h-3 w-3 text-teal-600" />{busy ? 'Preparando documento…' : savedAt ? 'Borrador guardado automáticamente' : 'Guardado automático activado'}
+              <Check className="h-3 w-3 text-teal-600" />{dictating ? 'Dictado en curso: deténgalo antes de imprimir' : busy ? 'Preparando documento…' : savedAt ? 'Borrador guardado automáticamente' : 'Guardado automático activado'}
             </p>
           ) : <p className="mt-1 text-xs text-slate-500">Consulte y recupere sus documentos guardados</p>}
         </div>
