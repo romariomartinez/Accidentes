@@ -150,10 +150,11 @@ body {
 .doc-number span,
 .doc-cell span {
   display: block;
-  color: #5f7286;
-  font-size: 10px;
-  font-weight: 850;
-  text-transform: uppercase;
+  color: #64748b;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 .doc-number strong {
@@ -186,7 +187,7 @@ body {
   color: #123a5a;
   padding: 8px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .doc-cell-wide {
@@ -207,7 +208,7 @@ body {
 
 .fomag-consent-text strong {
   color: #050f1a;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .fomag-manual-signature {
@@ -224,7 +225,7 @@ body {
   text-align: center;
   color: #123a5a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -238,9 +239,12 @@ body {
 .doc-section h3 {
   margin: 0 0 5px;
   border-left: 5px solid #008c8f;
+  background: #eaf3f6;
+  padding-top: 5px;
+  padding-bottom: 5px;
   color: #007f83;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: 0.04em;
   padding-left: 8px;
   text-transform: uppercase;
@@ -253,8 +257,9 @@ body {
   border-radius: 7px;
   padding: 8px;
   color: #263345;
-  font-size: 10.6px;
-  line-height: 1.3;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
   text-align: justify;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -284,9 +289,9 @@ body {
   display: block;
   margin-top: 2px;
   color: #050f1a;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1.18;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.28;
   overflow-wrap: anywhere;
 }
 
@@ -426,8 +431,10 @@ body {
 
   .doc-number span,
   .doc-cell span {
-    font-size: 10.5px !important;
-    color: #102f4d !important;
+    font-size: 8.5px !important;
+    font-weight: 400 !important;
+    color: #64748b !important;
+    text-transform: none !important;
   }
 
   .doc-number strong {
@@ -507,12 +514,17 @@ body {
   .doc-story,
   .doc-cell strong {
     color: #071f36 !important;
-    font-size: 11.2px !important;
-    font-weight: 750 !important;
-    line-height: 1.24 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
     margin-top: 2px !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
+  }
+
+  .doc-story {
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
   }
 
   body.print-fomag .document-sheet {
