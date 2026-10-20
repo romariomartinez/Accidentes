@@ -52,7 +52,7 @@ body {
 
 .preview-pane {
   position: sticky;
-  top: 104px;
+  top: 152px;
   align-self: start;
 }
 
@@ -636,3 +636,35 @@ body {
 @media print { .hospital-welcome { display: none !important; } }
 
 button:disabled { cursor: wait; opacity: .55; }
+
+/* Navegacion y acciones del documento */
+.header-more summary::-webkit-details-marker { display: none; }
+.header-more[open] summary { background: #f1f5f9; color: #163a5f; }
+.header-action-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 7px;
+  padding: 11px 10px;
+  background: transparent;
+  color: #475569;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+.header-action-menu button:hover, .header-action-menu button:focus-visible { background: #f0f7f8; color: #163a5f; }
+.header-action-menu button:focus-visible { outline: 2px solid #159a9c; outline-offset: -2px; }
+.header-action-menu svg { width: 16px; height: 16px; flex-shrink: 0; }
+.header-action-menu .header-new-document { color: #b45309; }
+@media (max-width: 640px) {
+  .header-brand-row { gap: 8px; }
+  .header-brand-row > div > img { height: 34px; width: 80px; }
+  .header-navigation { flex: 1; }
+  .header-navigation button { flex: 1; padding: 8px 6px; }
+  .header-navigation button svg { display: none; }
+  .header-toolbar { gap: 12px; }
+  .header-document-actions { width: 100%; }
+  .header-document-actions > button:nth-child(2) { flex: 1; }
+}
