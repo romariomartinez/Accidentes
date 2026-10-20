@@ -1,29 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/history.js';
-import { authenticated, passwordMatches, sessionCookie } from '../server/historyAuth.js';
 import { normalizeRecord, normalizeSearch } from '../server/historyData.js';
 import { accident, fomag, requestId } from './fixtures.mjs';
 
-process.env.HISTORY_ACCESS_PASSWORD = 'test-only-password-123';
 process.env.KV_REST_API_URL = 'https://storage.example.invalid';
 process.env.KV_REST_API_TOKEN = 'test-only';
 const headers = { host: 'hospital.example', origin: 'https://hospital.example' };
-const cookie = () => sessionCookie().split(';')[0];
-const call = async (method, body, query, signedIn = true) => {
+const call = async (method, body, query) => {
   const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(code) { this.code = code; return this; }, json(value) { this.body = value; return this; } };
-  await handler({ method, headers: { ...headers, cookie: signedIn ? cookie() : '' }, body, query }, res);
+  await handler({ method, headers, body, query }, res);
   return res;
 };
-
-test('sesion firmada, clave incorrecta, cookie alterada y expiracion', () => {
-  assert.equal(passwordMatches('test-only-password-123'), true);
-  assert.equal(passwordMatches('incorrecta'), false);
-  assert.equal(authenticated({ headers: { cookie: cookie() } }), true);
-  assert.equal(authenticated({ headers: { cookie: cookie() + 'x' } }), false);
-  assert.equal(authenticated({ headers: { cookie: 'hospital_history=1.fake' } }), false);
-  assert.match(sessionCookie(), /HttpOnly; SameSite=Strict/);
-});
 
 test('normalizacion estable ignora metadatos y rechaza datos invalidos', () => {
   const a = normalizeRecord('accident', accident, requestId);
@@ -35,17 +23,12 @@ test('normalizacion estable ignora metadatos y rechaza datos invalidos', () => {
   assert.equal(normalizeSearch('ÁLVAREZ 1.234-56'), normalizeSearch('alvarez123456'));
 });
 
-test('historial privado, origen y acceso sin configurar', async () => {
-  assert.equal((await call('POST', { action: 'search' }, null, false)).code, 401);
-  assert.equal((await call('GET', null, { action: 'record', number: accident.accident.declarationNumber }, false)).code, 401);
+test('acceso sin clave conserva validacion de origen', async () => {
   const res = { setHeader() {}, status(code) { this.code = code; return this; }, json() { return this; } };
   await handler({ method: 'POST', headers: { ...headers, origin: 'https://evil.example' }, body: { action: 'save' } }, res);
   assert.equal(res.code, 403);
-  const password = process.env.HISTORY_ACCESS_PASSWORD;
-  delete process.env.HISTORY_ACCESS_PASSWORD;
-  assert.equal((await call('GET', null, { action: 'session' }, false)).body.configured, false);
-  assert.equal((await call('POST', { action: 'search' }, null, false)).code, 503);
-  process.env.HISTORY_ACCESS_PASSWORD = password;
+  const session = await call('GET', null, { action: 'session' });
+  assert.equal(session.body.authenticated, true);
 });
 
 test('guardar, buscar sin tildes, recuperar y rechazar sobrescrituras', async () => {
@@ -84,21 +67,6 @@ test('guardar, buscar sin tildes, recuperar y rechazar sobrescrituras', async ()
     const opened = await call('GET', null, { action: 'record', number: accident.accident.declarationNumber });
     assert.equal(opened.body.record.requestId, requestId);
     assert.equal(opened.body.record.data.victim.fullName, accident.victim.fullName);
-  } finally { globalThis.fetch = realFetch; }
-});
-
-test('inicio de sesion y limite de intentos', async () => {
-  const realFetch = globalThis.fetch;
-  let attempts = 1;
-  globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: attempts }) });
-  try {
-    const wrong = await call('POST', { action: 'login', password: 'incorrecta' }, null, false);
-    assert.equal(wrong.code, 401);
-    const login = await call('POST', { action: 'login', password: 'test-only-password-123' }, null, false);
-    assert.equal(login.code, 200);
-    assert.match(login.headers['Set-Cookie'], /HttpOnly/);
-    attempts = 11;
-    assert.equal((await call('POST', { action: 'login', password: 'test-only-password-123' }, null, false)).code, 429);
   } finally { globalThis.fetch = realFetch; }
 });
 

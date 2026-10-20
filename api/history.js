@@ -1,5 +1,5 @@
 import { redis } from '../server/redis.js';
-import { authenticated, passwordMatches, sameOrigin, sessionCookie } from '../server/historyAuth.js';
+import { sameOrigin } from '../server/historyAuth.js';
 import { normalizeRecord, normalizeSearch } from '../server/historyData.js';
 
 // La reserva y el documento se verifican y guardan en una sola operacion.
@@ -23,23 +23,8 @@ export default async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ error: 'Metodo no permitido.' });
   if (req.method === 'POST' && !sameOrigin(req)) return res.status(403).json({ error: 'Origen no permitido.' });
   const action = req.method === 'GET' ? req.query?.action : req.body?.action;
-  const configured = Boolean(process.env.HISTORY_ACCESS_PASSWORD?.length >= 12);
-  if (action === 'session') return res.status(200).json({ authenticated: authenticated(req), configured });
-  if (!configured) return res.status(503).json({ error: 'Configure HISTORY_ACCESS_PASSWORD en Vercel con una clave de al menos 12 caracteres.' });
+  if (action === 'session') return res.status(200).json({ authenticated: true, configured: true });
   try {
-    if (action === 'login' && req.method === 'POST') {
-      const address = String(req.headers['x-forwarded-for'] || 'local').split(',')[0].trim();
-      const attempts = await redis(['EVAL', "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],900) end; return n", 1, `history:login:${address}`]);
-      if (attempts > 10) return res.status(429).json({ error: 'Demasiados intentos. Espere 15 minutos.' });
-      if (!passwordMatches(req.body.password)) return res.status(401).json({ error: 'Clave incorrecta.' });
-      res.setHeader('Set-Cookie', sessionCookie());
-      return res.status(200).json({ authenticated: true });
-    }
-    if (!authenticated(req)) return res.status(401).json({ error: 'Ingrese la clave para acceder al historial compartido.' });
-    if (action === 'logout' && req.method === 'POST') {
-      res.setHeader('Set-Cookie', sessionCookie(true));
-      return res.status(200).json({ authenticated: false });
-    }
     if (req.method === 'GET' && action === 'record') {
       const number = req.query.number;
       if (typeof number !== 'string' || !/^(DAT|FOMAG)-\d{8}-\d{2,}$/.test(number)) return res.status(400).json({ error: 'Numero invalido.' });

@@ -2,7 +2,7 @@ import { HistoryPanel } from './components/HistoryPanel';
 import { HistoryRecord, HistoryModule } from './types/history';
 import { TrafficAccidentDeclaration } from './types/declaration';
 import { FomagSignatureFormData } from './types/fomag';
-import { HistoryAccessError, historyRequest, restoreReservation, saveHistory } from './utils/history';
+import { restoreReservation, saveHistory } from './utils/history';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { reserveNumber, waitForDocument } from './utils/centralNumber';
 import { getMissingPrintFields } from './utils/validators';
@@ -34,7 +34,6 @@ const App = () => {
   const [notice, setNotice] = useState('');
   const [recordToOpen, setRecordToOpen] = useState<HistoryRecord | null>(null);
   const busyRef = useRef(false);
-  const pendingAction = useRef<{ module: HistoryModule; action: 'save' | 'print' | 'pdf' } | null>(null);
 
   const runDocumentAction = async (module: HistoryModule, action: 'save' | 'print' | 'pdf'): Promise<boolean> => {
     if (busyRef.current) return false;
@@ -45,14 +44,6 @@ const App = () => {
       if (module === 'accident') {
         const missing = getMissingPrintFields(form.getValues());
         if (missing.length) throw new Error(`Complete: ${missing.join(', ')}.`);
-      }
-      const session = await historyRequest<{ authenticated: boolean; configured: boolean }>(undefined, '?action=session');
-      if (!session.authenticated) {
-        pendingAction.current = { module, action };
-        setHistoryOpen(true);
-        setPreviewOpen(false);
-        setNotice('Ingrese la clave del historial para guardar el documento y continuar.');
-        return false;
       }
       const number = await reserveNumber(module, module === 'accident' ? form.getValues('accident.declarationNumber') : fomag.form.getValues('recordNumber'));
       if (module === 'accident') { form.setValue('accident.declarationNumber', number); saveDraft(); }
@@ -73,7 +64,6 @@ const App = () => {
       }
       return true;
     } catch (error) {
-      if (error instanceof HistoryAccessError) { pendingAction.current = { module, action }; setHistoryOpen(true); setPreviewOpen(false); }
       setMissingFields([error instanceof Error ? error.message : 'No se pudo completar la operacion. Intente nuevamente.']);
       return false;
     } finally { busyRef.current = false; setBusy(false); }
@@ -155,17 +145,13 @@ const App = () => {
         onPrint={handleHeaderPrint}
         onPdf={() => void runDocumentAction(activeModule, 'pdf')}
         onArchive={() => void runDocumentAction(activeModule, 'save')}
-        onHistory={() => { pendingAction.current = null; setHistoryOpen((open) => !open); }}
+        onHistory={() => { setHistoryOpen((open) => !open); }}
         busy={busy}
       />
 
       {historyOpen ? <HistoryPanel
-        onClose={() => { setHistoryOpen(false); pendingAction.current = null; }}
+        onClose={() => { setHistoryOpen(false); }}
         onOpenRecord={requestOpenHistoryRecord}
-        onAuthenticated={() => {
-          const pending = pendingAction.current; pendingAction.current = null;
-          if (pending) { setHistoryOpen(false); void runDocumentAction(pending.module, pending.action); }
-        }}
       /> : null}
       {busy || notice ? <div className="app-chrome mx-auto max-w-[1500px] px-4 pt-4"><p role="status" className="rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm text-hospital-navy">{busy ? 'Preparando documento…' : notice}</p></div> : null}
       {missingFields.length ? (
@@ -203,7 +189,7 @@ const App = () => {
           onRemoveRecord={fomag.removeRecord}
           onPrint={handleFomagPrint}
           onPdf={() => void runDocumentAction('fomag', 'pdf')}
-          onHistory={() => { pendingAction.current = null; setHistoryOpen(true); }}
+          onHistory={() => { setHistoryOpen(true); }}
           busy={busy}
         />
       )}

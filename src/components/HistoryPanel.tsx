@@ -1,18 +1,14 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HistoryRecord, HistorySummary } from '../types/history';
-import { HistoryAccessError, historyRequest } from '../utils/history';
+import { historyRequest } from '../utils/history';
 import { formatColombianDate } from '../utils/formatters';
 
 interface Props {
   onClose: () => void;
   onOpenRecord: (record: HistoryRecord) => void;
-  onAuthenticated: () => void;
 }
 
-export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) => {
-  const [session, setSession] = useState<boolean | null>(null);
-  const [configured, setConfigured] = useState(true);
-  const [password, setPassword] = useState('');
+export const HistoryPanel = ({ onClose, onOpenRecord }: Props) => {
   const [query, setQuery] = useState('');
   const [module, setModule] = useState('');
   const [records, setRecords] = useState<HistorySummary[]>([]);
@@ -23,15 +19,6 @@ export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) 
   const requestVersion = useRef(0);
   const filters = useRef({ query: '', module: '' });
   const title = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    title.current?.focus();
-    let active = true;
-    historyRequest<{ authenticated: boolean; configured: boolean }>(undefined, '?action=session')
-      .then((result) => { if (active) { setSession(result.authenticated); setConfigured(result.configured); } })
-      .catch((reason: Error) => { if (active) { setError(reason.message); setSession(false); } });
-    return () => { active = false; requestVersion.current++; };
-  }, []);
 
   const search = async (cursor = 0, initial = false) => {
     if (!cursor) filters.current = initial ? { query: '', module: '' } : { query, module };
@@ -44,26 +31,17 @@ export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) 
       setNextCursor(result.nextCursor); setTotal(result.total);
     } catch (reason) {
       if (version !== requestVersion.current) return;
-      if (reason instanceof HistoryAccessError) setSession(false);
       setError(reason instanceof Error ? reason.message : 'No se pudo buscar.');
     } finally { if (version === requestVersion.current) setLoading(false); }
   };
 
   useEffect(() => {
-    if (!session) return;
-    // La busqueda inicial carga los documentos recientes; las siguientes son explicitas.
+    title.current?.focus();
     void search(0, true);
+    return () => { requestVersion.current++; };
+    // La consulta inicial usa filtros vacios; los cambios se buscan al enviar el formulario.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
-
-  const login = async (event: FormEvent) => {
-    event.preventDefault(); setLoading(true); setError('');
-    try {
-      await historyRequest({ action: 'login', password });
-      setPassword(''); setSession(true); onAuthenticated();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo iniciar sesion.'); }
-    finally { setLoading(false); }
-  };
+  }, []);
 
   const open = async (number: string) => {
     setLoading(true); setError('');
@@ -71,7 +49,6 @@ export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) 
       const result = await historyRequest<{ record: HistoryRecord }>(undefined, `?action=record&number=${encodeURIComponent(number)}`);
       onOpenRecord(result.record);
     } catch (reason) {
-      if (reason instanceof HistoryAccessError) setSession(false);
       setError(reason instanceof Error ? reason.message : 'No se pudo abrir el documento.');
     } finally { setLoading(false); }
   };
@@ -82,21 +59,11 @@ export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) 
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div><h2 ref={title} tabIndex={-1} id="history-title" className="text-lg font-bold text-hospital-navy">Historial compartido</h2><p className="mt-1 text-sm text-slate-500">Documentos guardados para consultar y reimprimir desde cualquier equipo.</p></div>
           <div className="flex gap-2">
-            {session ? <button className="btn-ghost" type="button" disabled={loading} onClick={async () => { try { await historyRequest({ action: 'logout' }); setSession(false); setRecords([]); } catch (reason) { setError(reason instanceof Error ? reason.message : 'No se pudo cerrar la sesion.'); } }}>Cerrar sesión</button> : null}
             <button type="button" className="btn-ghost" onClick={onClose}>Cerrar historial</button>
           </div>
         </div>
         {error ? <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
-        {session === null ? <p role="status" className="text-sm text-slate-500">Comprobando acceso…</p> : !configured ? (
-          <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900">Para activar el historial, configure una clave privada de al menos 12 caracteres en Vercel, en la variable <strong>HISTORY_ACCESS_PASSWORD</strong>, y vuelva a desplegar el proyecto.</p>
-        ) : !session ? (
-          <form onSubmit={login} className="flex max-w-xl flex-wrap items-end gap-3">
-            <label className="min-w-56 flex-1 text-sm font-medium text-slate-700">Clave de acceso al historial<input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required maxLength={256} className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2" /></label>
-            <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Ingresando…' : 'Ingresar'}</button>
-            <p className="w-full text-xs text-slate-500">La sesión dura 8 horas en este navegador. Solo las personas con la clave pueden consultar o guardar documentos.</p>
-          </form>
-        ) : (
-          <>
+        <>
             <form onSubmit={(event) => { event.preventDefault(); void search(); }} className="mb-4 flex flex-wrap items-end gap-3">
               <label className="min-w-56 flex-1 text-sm font-medium text-slate-700">Buscar<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nombre, documento, fecha o consecutivo" maxLength={150} className="mt-2 block w-full rounded-md border border-slate-300 px-3 py-2" /></label>
               <label className="text-sm font-medium text-slate-700">Tipo de documento<select value={module} onChange={(event) => setModule(event.target.value)} className="mt-2 block rounded-md border border-slate-300 bg-white px-3 py-2"><option value="">Todos</option><option value="accident">Accidentes</option><option value="fomag">FOMAG</option></select></label>
@@ -109,7 +76,6 @@ export const HistoryPanel = ({ onClose, onOpenRecord, onAuthenticated }: Props) 
             </div>
             {nextCursor !== null ? <button type="button" className="btn-ghost mt-4" disabled={loading} onClick={() => void search(nextCursor)}>Ver más resultados</button> : null}
           </>
-        )}
       </div>
     </section>
   );

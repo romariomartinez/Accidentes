@@ -2,8 +2,6 @@ import { HistoryModule, HistoryRecord } from '../types/history';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { FomagSignatureFormData } from '../types/fomag';
 
-export class HistoryAccessError extends Error {}
-
 export async function historyRequest<T>(body?: object, query = ''): Promise<T> {
   const response = await fetch(`/api/history${query}`, {
     method: body ? 'POST' : 'GET',
@@ -13,7 +11,6 @@ export async function historyRequest<T>(body?: object, query = ''): Promise<T> {
     signal: AbortSignal.timeout(25000),
   });
   const result = await response.json().catch(() => ({}));
-  if (response.status === 401) throw new HistoryAccessError(result.error);
   if (!response.ok) throw new Error(result.error || 'No se pudo acceder al historial.');
   return result as T;
 }
