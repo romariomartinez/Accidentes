@@ -1,7 +1,8 @@
+import { reserveNumber } from '../utils/centralNumber';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FomagSignatureFormData, FomagSignatureRecord } from '../types/fomag';
-import { todayInputDate } from '../utils/formatters';
+import { nextConsecutive, todayInputDate } from '../utils/formatters';
 import { useLocalStorage } from './useLocalStorage';
 
 const recordsStorageKey = 'fomag-signature-records';
@@ -15,12 +16,8 @@ type FomagDraft = {
 
 const createRecordNumber = (): string => {
   const date = todayInputDate().replace(/-/g, '');
-  const rawSequences = window.localStorage.getItem(sequenceStorageKey);
-  const sequences = rawSequences ? (JSON.parse(rawSequences) as Record<string, number>) : {};
-  const nextSequence = (sequences[date] ?? 0) + 1;
-  sequences[date] = nextSequence;
-  window.localStorage.setItem(sequenceStorageKey, JSON.stringify(sequences));
-  return `FOMAG-${date}-${String(nextSequence).padStart(2, '0')}`;
+  const nextSequence = nextConsecutive(sequenceStorageKey);
+  return `BORRADOR-FOMAG-${date}-${String(nextSequence).padStart(2, '0')}`;
 };
 
 const createEmptyFomagForm = (): FomagSignatureFormData => ({
@@ -93,6 +90,12 @@ export const useFomagSignatures = () => {
     const data = form.getValues();
     if (!valid) return false;
 
+    try {
+      data.recordNumber = await reserveNumber('fomag', data.recordNumber);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'No se pudo obtener el consecutivo.');
+      return false;
+    }
     const record: FomagSignatureRecord = {
       ...data,
       id: `${Date.now()}`,

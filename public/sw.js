@@ -1,4 +1,4 @@
-const CACHE_NAME = 'accidentes-app-v10';
+const CACHE_NAME = 'accidentes-app-v11';
 const APP_SHELL = ['/', '/manifest.webmanifest', '/hospital-logo.bmp', '/pwa-icon-192.png', '/pwa-icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -16,7 +16,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET' || new URL(event.request.url).pathname.startsWith('/api/')) return;
 
   event.respondWith(
     fetch(event.request)

@@ -1,3 +1,5 @@
+import { reserveNumber, waitForDocument } from './utils/centralNumber';
+import { getMissingPrintFields } from './utils/validators';
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { AccidentForm } from './components/AccidentForm';
@@ -27,7 +29,17 @@ const App = () => {
       return;
     }
     setMissingFields([]);
-    print(form.getValues(), setMissingFields);
+    const missing = getMissingPrintFields(form.getValues());
+    if (missing.length) { setMissingFields(missing); return; }
+    try {
+      const number = await reserveNumber('accident', form.getValues('accident.declarationNumber'));
+      form.setValue('accident.declarationNumber', number);
+      saveDraft();
+      await waitForDocument();
+      print(form.getValues(), setMissingFields);
+    } catch (error) {
+      setMissingFields([error instanceof Error ? error.message : 'No se pudo obtener el consecutivo.']);
+    }
   };
 
   const handleFomagPrint = async () => {
@@ -37,6 +49,15 @@ const App = () => {
       return;
     }
     setMissingFields([]);
+    try {
+      const number = await reserveNumber('fomag', fomag.form.getValues('recordNumber'));
+      fomag.form.setValue('recordNumber', number);
+      fomag.saveDraft();
+      await waitForDocument();
+    } catch (error) {
+      setMissingFields([error instanceof Error ? error.message : 'No se pudo obtener el consecutivo.']);
+      return;
+    }
     document.body.classList.add('print-fomag');
     window.print();
     window.setTimeout(() => document.body.classList.remove('print-fomag'), 500);

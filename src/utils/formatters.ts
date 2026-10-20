@@ -45,12 +45,22 @@ export const todayInputDate = (): string => {
 
 export const todayCompactDate = (): string => todayInputDate().replace(/-/g, '');
 
+// Conserva un contador global y migra los antiguos contadores diarios.
+export const nextConsecutive = (storageKey: string): number => {
+  const raw = window.localStorage.getItem(storageKey);
+  const stored: unknown = raw ? JSON.parse(raw) : 0;
+  const values = typeof stored === 'number'
+    ? [stored]
+    : stored && typeof stored === 'object' ? Object.values(stored) : [];
+  const last = values.reduce<number>((max, value) =>
+    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+      ? Math.max(max, value) : max, 0);
+  const next = last + 1;
+  window.localStorage.setItem(storageKey, JSON.stringify(next));
+  return next;
+};
+
 export const createDeclarationNumber = (): string => {
-  const date = todayCompactDate();
-  const rawSequences = window.localStorage.getItem(sequenceStorageKey);
-  const sequences = rawSequences ? (JSON.parse(rawSequences) as Record<string, number>) : {};
-  const nextSequence = (sequences[date] ?? 0) + 1;
-  sequences[date] = nextSequence;
-  window.localStorage.setItem(sequenceStorageKey, JSON.stringify(sequences));
-  return `DAT-${date}-${String(nextSequence).padStart(2, '0')}`;
+  const nextSequence = nextConsecutive(sequenceStorageKey);
+  return `BORRADOR-DAT-${todayCompactDate()}-${String(nextSequence).padStart(2, '0')}`;
 };
