@@ -1,7 +1,7 @@
 import { Archive, Eraser, History, Save } from 'lucide-react';
 import { PrintActions } from './PrintActions';
 
-export type AppModule = 'accident' | 'fomag';
+export type AppModule = 'accident' | 'fomag' | 'history';
 
 interface AppHeaderProps {
   savedAt: string;
@@ -13,7 +13,6 @@ interface AppHeaderProps {
   onPrint: () => void;
   onPdf: () => void;
   onArchive: () => void;
-  onHistory: () => void;
   busy: boolean;
 }
 
@@ -27,7 +26,6 @@ export const AppHeader = ({
   onPrint,
   onPdf,
   onArchive,
-  onHistory,
   busy,
 }: AppHeaderProps) => (
   <header className="app-chrome sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -38,16 +36,16 @@ export const AppHeader = ({
         </div>
         <div>
           <h1 className="text-xl font-bold text-hospital-navy md:text-2xl">
-            {activeModule === 'accident' ? 'Declaracion de Accidente de Transito' : 'Firmas Usuarios FOMAG'}
+            {activeModule === 'history' ? 'Historial de documentos' : activeModule === 'accident' ? 'Declaracion de Accidente de Transito' : 'Firmas Usuarios FOMAG'}
           </h1>
           <p className="text-sm text-slate-600">
-            {activeModule === 'accident'
+            {activeModule === 'history' ? 'Consulte los documentos guardados de Accidentes y FOMAG' : activeModule === 'accident'
               ? 'Diligencie la informacion y revise el documento antes de imprimir'
               : 'Genere el consentimiento para imprimir y firmar a mano'}
           </p>
-          <p className="mt-1 text-xs font-medium text-hospital-green">
+          {activeModule !== 'history' ? <p className="mt-1 text-xs font-medium text-hospital-green">
             {savedAt ? `Cambios guardados ${new Date(savedAt).toLocaleTimeString('es-CO')}` : 'Borrador listo'}
-          </p>
+          </p> : null}
         </div>
       </div>
 
@@ -69,8 +67,18 @@ export const AppHeader = ({
           >
             FOMAG
           </button>
+          <button
+            type="button"
+            disabled={busy}
+            aria-pressed={activeModule === 'history'}
+            onClick={() => onModuleChange('history')}
+            className={`inline-flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold ${activeModule === 'history' ? 'bg-white text-hospital-navy shadow-sm' : 'text-slate-600'}`}
+          >
+            <History className="h-4 w-4" />Historial
+          </button>
         </div>
 
+        {activeModule !== 'history' ? <>
         <button type="button" onClick={onSave} disabled={busy} className="btn-secondary">
           <Save className="h-4 w-4" />
           Guardar borrador
@@ -80,8 +88,8 @@ export const AppHeader = ({
           Limpiar
         </button>
         <button type="button" onClick={onArchive} disabled={busy} className="btn-secondary"><Archive className="h-4 w-4" />Guardar en historial</button>
-        <button type="button" onClick={onHistory} disabled={busy} className="btn-secondary"><History className="h-4 w-4" />Historial</button>
         <PrintActions onPreview={onPreview} onPrint={onPrint} onPdf={onPdf} busy={busy} />
+        </> : null}
       </div>
     </div>
   </header>

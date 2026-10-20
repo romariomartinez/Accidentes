@@ -59,9 +59,10 @@ export const HistoryPanel = ({ onClose, onOpenRecord }: Props) => {
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div><h2 ref={title} tabIndex={-1} id="history-title" className="text-lg font-bold text-hospital-navy">Historial compartido</h2><p className="mt-1 text-sm text-slate-500">Documentos guardados para consultar y reimprimir desde cualquier equipo.</p></div>
           <div className="flex gap-2">
-            <button type="button" className="btn-ghost" onClick={onClose}>Cerrar historial</button>
+            <button type="button" className="btn-ghost" onClick={onClose}>Volver al formulario</button>
           </div>
         </div>
+        <p className="mb-4 rounded-lg bg-teal-50 p-3 text-sm text-hospital-navy">Los documentos guardados permanecen en este historial aunque cierre la página o cambie de navegador.</p>
         {error ? <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
         <>
             <form onSubmit={(event) => { event.preventDefault(); void search(); }} className="mb-4 flex flex-wrap items-end gap-3">

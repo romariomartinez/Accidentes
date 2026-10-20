@@ -10,7 +10,7 @@ El historial tiene acceso directo sin contraseña por solicitud del usuario. Cua
 
 - **Guardar borrador** conserva el trabajo solo en el navegador.
 - **Guardar en historial**, **Imprimir** y **Descargar PDF** validan, reservan el consecutivo central y guardan una copia completa en la base. No requieren iniciar sesión.
-- **Historial** permite buscar por nombre, documento, consecutivo o fecha (AAAA-MM-DD o DD/MM/AAAA), filtrar por módulo, y cargar más resultados.
+- **Historial** es un módulo independiente, accesible mediante el botón permanente del encabezado o el enlace `/#historial`. No muestra el formulario ni su borrador. Los documentos permanecen en Redis al cerrar la página. Permite buscar por nombre, documento, consecutivo o fecha (AAAA-MM-DD o DD/MM/AAAA), filtrar por módulo, y cargar más resultados.
 - **Abrir documento** recupera los datos y su reserva original: reimprimir o descargar no consume un número nuevo. Antes de sustituir un borrador con nombre de paciente se pide confirmación.
 - Los documentos archivados son inmutables: intentar guardar datos diferentes con el mismo consecutivo devuelve un aviso. Use **Limpiar** para iniciar un documento nuevo. No hay eliminación del historial en esta versión.
 - Los registros guardados únicamente en versiones anteriores dentro de un navegador no se trasladan automáticamente al historial central. La sección antigua de FOMAG se conserva identificada como local.

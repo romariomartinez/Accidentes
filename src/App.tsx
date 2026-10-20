@@ -6,7 +6,7 @@ import { restoreReservation, saveHistory } from './utils/history';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { reserveNumber, waitForDocument } from './utils/centralNumber';
 import { getMissingPrintFields } from './utils/validators';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { AccidentForm } from './components/AccidentForm';
 import { AppHeader, AppModule } from './components/AppHeader';
@@ -19,17 +19,33 @@ import { useFomagSignatures } from './hooks/useFomagSignatures';
 import { usePrint } from './hooks/usePrint';
 
 const App = () => {
-  const { form, data, savedAt, saveDraft, clearDraft, loadExample, restoreDeclaration } = useDeclarationForm();
+  const { form, data, savedAt, saveDraft, clearDraft, restoreDeclaration } = useDeclarationForm();
   const fomag = useFomagSignatures();
   const { print } = usePrint();
   const [showWelcome, setShowWelcome] = useState(true);
-  const [activeModule, setActiveModule] = useState<AppModule>('accident');
+  const moduleFromHash = (): AppModule => window.location.hash === '#historial' ? 'history' : window.location.hash === '#fomag' ? 'fomag' : 'accident';
+  const [activeModule, setActiveModule] = useState<AppModule>(moduleFromHash);
+  const previousDocumentModule = useRef<HistoryModule>('accident');
+  const changeModule = (module: AppModule) => {
+    if (module !== 'history') previousDocumentModule.current = module;
+    setActiveModule(module);
+    setPreviewOpen(false);
+    window.location.hash = module === 'history' ? 'historial' : module === 'fomag' ? 'fomag' : 'accidentes';
+  };
+  useEffect(() => {
+    const onHashChange = () => {
+      const module = moduleFromHash();
+      if (module !== 'history') previousDocumentModule.current = module;
+      setActiveModule(module);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [recordToOpen, setRecordToOpen] = useState<HistoryRecord | null>(null);
@@ -77,7 +93,7 @@ const App = () => {
     if (record.module === 'accident') {
       restoreDeclaration({ ...record.data as TrafficAccidentDeclaration, metadata: { createdAt: record.createdAt, savedAt: record.createdAt } });
     } else { fomag.form.reset(record.data as FomagSignatureFormData); fomag.saveDraft(); }
-    setActiveModule(record.module); setHistoryOpen(false); setMissingFields([]);
+    changeModule(record.module); setMissingFields([]);
     setNotice(`Documento ${record.number} recuperado. Puede imprimirlo o descargarlo con su consecutivo original. Para cambios, inicie un documento nuevo.`);
   };
 
@@ -138,23 +154,18 @@ const App = () => {
       <AppHeader
         savedAt={activeModule === 'accident' ? savedAt : fomag.savedAt}
         activeModule={activeModule}
-        onModuleChange={setActiveModule}
+        onModuleChange={changeModule}
         onSave={handleHeaderSave}
         onClear={() => setClearOpen(true)}
         onPreview={handleHeaderPreview}
         onPrint={handleHeaderPrint}
-        onPdf={() => void runDocumentAction(activeModule, 'pdf')}
-        onArchive={() => void runDocumentAction(activeModule, 'save')}
-        onHistory={() => { setHistoryOpen((open) => !open); }}
+        onPdf={() => { if (activeModule !== 'history') void runDocumentAction(activeModule, 'pdf'); }}
+        onArchive={() => { if (activeModule !== 'history') void runDocumentAction(activeModule, 'save'); }}
         busy={busy}
       />
 
-      {historyOpen ? <HistoryPanel
-        onClose={() => { setHistoryOpen(false); }}
-        onOpenRecord={requestOpenHistoryRecord}
-      /> : null}
-      {busy || notice ? <div className="app-chrome mx-auto max-w-[1500px] px-4 pt-4"><p role="status" className="rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm text-hospital-navy">{busy ? 'Preparando documento…' : notice}</p></div> : null}
-      {missingFields.length ? (
+      {activeModule !== 'history' && (busy || notice) ? <div className="app-chrome mx-auto max-w-[1500px] px-4 pt-4"><p role="status" className="rounded-lg border border-teal-100 bg-teal-50 p-3 text-sm text-hospital-navy">{busy ? 'Preparando documento…' : notice}</p></div> : null}
+      {activeModule !== 'history' && missingFields.length ? (
         <div className="app-chrome mx-auto mt-4 max-w-[1500px] px-4">
           <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -166,10 +177,14 @@ const App = () => {
         </div>
       ) : null}
 
-      <fieldset disabled={busy} className="contents">
+      {activeModule === 'history' ? (
+        <main className="pb-6">
+          <HistoryPanel onClose={() => changeModule(previousDocumentModule.current)} onOpenRecord={requestOpenHistoryRecord} />
+        </main>
+      ) : <fieldset disabled={busy} className="contents">
       {activeModule === 'accident' ? (
         <main className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 xl:grid-cols-[minmax(540px,0.96fr)_minmax(520px,1.04fr)]">
-          <AccidentForm form={form} onLoadExample={loadExample} />
+          <AccidentForm form={form} />
           <aside className="preview-pane">
             <div className="app-chrome mb-3 flex items-center justify-between">
               <div>
@@ -189,12 +204,12 @@ const App = () => {
           onRemoveRecord={fomag.removeRecord}
           onPrint={handleFomagPrint}
           onPdf={() => void runDocumentAction('fomag', 'pdf')}
-          onHistory={() => { setHistoryOpen(true); }}
+          onHistory={() => changeModule('history')}
           busy={busy}
         />
       )}
 
-      </fieldset>
+      </fieldset>}
 
       <PreviewModal open={previewOpen} data={data} onClose={requestClosePreview} onPrint={handlePrint} onPdf={() => void runDocumentAction('accident', 'pdf')} busy={busy} />
       <ConfirmDialog
