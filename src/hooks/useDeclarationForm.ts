@@ -234,6 +234,15 @@ export const useDeclarationForm = () => {
     setSavedAt(new Date().toISOString());
   };
 
+  const restoreDeclaration = (data: TrafficAccidentDeclaration) => {
+    // Al recuperar otro documento, estas casillas no son cambios manuales.
+    previousDriverFled.current = data.driver.fled;
+    previousOwnerUnknown.current = data.owner.unknown;
+    form.reset(data);
+    setValue(data);
+    setSavedAt(data.metadata.savedAt);
+  };
+
   return {
     form,
     data: watchedData,
@@ -241,5 +250,6 @@ export const useDeclarationForm = () => {
     saveDraft,
     clearDraft,
     loadExample,
+    restoreDeclaration,
   };
 };

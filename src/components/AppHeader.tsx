@@ -1,4 +1,4 @@
-import { Eraser, Save } from 'lucide-react';
+import { Archive, Eraser, History, Save } from 'lucide-react';
 import { PrintActions } from './PrintActions';
 
 export type AppModule = 'accident' | 'fomag';
@@ -11,6 +11,10 @@ interface AppHeaderProps {
   onClear: () => void;
   onPreview: () => void;
   onPrint: () => void;
+  onPdf: () => void;
+  onArchive: () => void;
+  onHistory: () => void;
+  busy: boolean;
 }
 
 export const AppHeader = ({
@@ -21,6 +25,10 @@ export const AppHeader = ({
   onClear,
   onPreview,
   onPrint,
+  onPdf,
+  onArchive,
+  onHistory,
+  busy,
 }: AppHeaderProps) => (
   <header className="app-chrome sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
     <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
@@ -47,6 +55,7 @@ export const AppHeader = ({
         <div className="flex rounded-md border border-slate-200 bg-slate-50 p-1">
           <button
             type="button"
+            disabled={busy}
             onClick={() => onModuleChange('accident')}
             className={`rounded px-3 py-2 text-sm font-semibold ${activeModule === 'accident' ? 'bg-white text-hospital-navy shadow-sm' : 'text-slate-600'}`}
           >
@@ -54,6 +63,7 @@ export const AppHeader = ({
           </button>
           <button
             type="button"
+            disabled={busy}
             onClick={() => onModuleChange('fomag')}
             className={`rounded px-3 py-2 text-sm font-semibold ${activeModule === 'fomag' ? 'bg-white text-hospital-navy shadow-sm' : 'text-slate-600'}`}
           >
@@ -61,15 +71,17 @@ export const AppHeader = ({
           </button>
         </div>
 
-        <button type="button" onClick={onSave} className="btn-secondary">
+        <button type="button" onClick={onSave} disabled={busy} className="btn-secondary">
           <Save className="h-4 w-4" />
           Guardar borrador
         </button>
-        <button type="button" onClick={onClear} className="btn-ghost">
+        <button type="button" onClick={onClear} disabled={busy} className="btn-ghost">
           <Eraser className="h-4 w-4" />
           Limpiar
         </button>
-        <PrintActions onPreview={onPreview} onPrint={onPrint} />
+        <button type="button" onClick={onArchive} disabled={busy} className="btn-secondary"><Archive className="h-4 w-4" />Guardar en historial</button>
+        <button type="button" onClick={onHistory} disabled={busy} className="btn-secondary"><History className="h-4 w-4" />Historial</button>
+        <PrintActions onPreview={onPreview} onPrint={onPrint} onPdf={onPdf} busy={busy} />
       </div>
     </div>
   </header>

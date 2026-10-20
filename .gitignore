@@ -7,3 +7,4 @@ vite.config.d.ts
 .pnpm-store/
 .env*
 !.env.example
+/tmp/

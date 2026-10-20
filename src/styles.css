@@ -634,3 +634,5 @@ body {
   .welcome-footer { display: none; }
 }
 @media print { .hospital-welcome { display: none !important; } }
+
+button:disabled { cursor: wait; opacity: .55; }

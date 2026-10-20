@@ -121,6 +121,9 @@ interface FomagSignatureModuleProps {
   onSaveRecord: () => Promise<boolean>;
   onRemoveRecord: (id: string) => void;
   onPrint: () => void;
+  onPdf: () => void;
+  onHistory: () => void;
+  busy: boolean;
 }
 
 export const FomagSignatureModule = ({
@@ -130,6 +133,9 @@ export const FomagSignatureModule = ({
   onSaveRecord,
   onRemoveRecord,
   onPrint,
+  onPdf,
+  onHistory,
+  busy,
 }: FomagSignatureModuleProps) => {
   const {
     register,
@@ -146,9 +152,9 @@ export const FomagSignatureModule = ({
             Modulo de consentimientos FOMAG
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className="btn-primary" onClick={onSaveRecord}>
+            <button type="button" className="btn-primary" disabled={busy} onClick={onSaveRecord}>
               <Save className="h-4 w-4" />
-              Guardar registro
+              Guardar en historial
             </button>
           </div>
         </div>
@@ -210,7 +216,8 @@ export const FomagSignatureModule = ({
         </section>
 
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-hospital-navy">Registros guardados</h2>
+          <button type="button" className="btn-secondary mb-4" onClick={onHistory}>Consultar historial compartido</button>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-hospital-navy">Registros anteriores de este navegador</h2>
           <div className="space-y-2">
             {records.length ? records.map((record) => (
               <div key={record.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 p-3">
@@ -234,9 +241,9 @@ export const FomagSignatureModule = ({
             <h2 className="text-base font-semibold text-hospital-navy">Vista previa FOMAG</h2>
             <p className="text-sm text-slate-500">Consentimiento listo para imprimir y firmar a mano</p>
           </div>
-          <button type="button" className="btn-green" onClick={onPrint}>
+          <button type="button" className="btn-green" disabled={busy} onClick={onPdf}>
             <FileDown className="h-4 w-4" />
-            PDF
+            Descargar PDF
           </button>
         </div>
         <div className="fomag-print-area">
