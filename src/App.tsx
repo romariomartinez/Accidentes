@@ -1,3 +1,4 @@
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { reserveNumber, waitForDocument } from './utils/centralNumber';
 import { getMissingPrintFields } from './utils/validators';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ const App = () => {
   const { form, data, savedAt, saveDraft, clearDraft, loadExample } = useDeclarationForm();
   const fomag = useFomagSignatures();
   const { print } = usePrint();
+  const [showWelcome, setShowWelcome] = useState(true);
   const [activeModule, setActiveModule] = useState<AppModule>('accident');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
@@ -106,6 +108,8 @@ const App = () => {
     }
     setPreviewOpen(false);
   };
+
+  if (showWelcome) return <WelcomeScreen onDismiss={setShowWelcome} />;
 
   return (
     <div className="min-h-screen bg-hospital-bg text-slate-800">

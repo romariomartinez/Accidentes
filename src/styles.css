@@ -590,3 +590,47 @@ body {
     height: 96px !important;
   }
 }
+
+/* Bienvenida institucional */
+.hospital-welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background: radial-gradient(ellipse at 50% 42%, #e2f9f5 0%, #f3fafc 45%, #e8eff7 100%);
+  color: #163a5f;
+  animation: welcome-reveal 600ms ease-out both;
+}
+.welcome-content { position: relative; z-index: 1; width: min(100%, 460px); text-align: center; animation: welcome-rise 850ms cubic-bezier(.2,.8,.2,1) both; }
+.welcome-eyebrow { margin: 0 0 24px; font-size: 11px; font-weight: 700; letter-spacing: .32em; color: #237a7b; }
+.welcome-logo-card { position: relative; display: grid; place-items: center; padding: 38px 32px; border: 1px solid #fff; border-radius: 28px; background: #fff; box-shadow: 0 28px 80px #163a5f16, 0 0 70px #38bcb72b; }
+.welcome-logo-card img { display: block; width: min(100%, 310px); height: auto; object-fit: contain; }
+.welcome-content h1 { margin: 30px 0 8px; font-size: clamp(26px, 6vw, 36px); font-weight: 600; letter-spacing: -.035em; }
+.welcome-location { margin: 0; font-size: 14px; color: #64748b; }
+.welcome-progress { width: 100px; height: 3px; margin: 28px auto 20px; overflow: hidden; border-radius: 8px; background: #d5e7e9; }
+.welcome-progress span { display: block; width: 100%; height: 100%; background: #159a9c; transform-origin: left; animation: welcome-progress 2200ms ease-in-out both; }
+.welcome-enter { padding: 10px 18px; border: 0; border-radius: 24px; background: transparent; font-size: 13px; font-weight: 600; color: #237a7b; cursor: pointer; }
+.welcome-enter span { display: inline-block; margin-left: 8px; }
+.welcome-enter:hover { background: #d9efed; }
+.welcome-enter:focus-visible { outline: 2px solid #159a9c; outline-offset: 4px; }
+.welcome-footer { position: absolute; bottom: max(24px, env(safe-area-inset-bottom)); left: 24px; right: 24px; text-align: center; color: #64748b; font-size: 11px; letter-spacing: .05em; }
+.welcome-orbit { position: absolute; width: min(90vw, 650px); aspect-ratio: 1; border: 1px solid #159a9c13; border-radius: 50%; pointer-events: none; animation: welcome-halo 2400ms ease-out both; }
+.welcome-orbit-two { width: min(120vw, 880px); animation-delay: 120ms; }
+@keyframes welcome-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes welcome-rise { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes welcome-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes welcome-halo { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) {
+  .hospital-welcome, .welcome-content, .welcome-orbit, .welcome-progress span { animation: none; }
+}
+@media (max-height: 580px) {
+  .welcome-logo-card { padding: 18px; }
+  .welcome-logo-card img { width: 190px; }
+  .welcome-content h1 { margin-top: 16px; }
+  .welcome-eyebrow { margin-bottom: 12px; }
+  .welcome-footer { display: none; }
+}
+@media print { .hospital-welcome { display: none !important; } }
