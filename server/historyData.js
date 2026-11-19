@@ -23,18 +23,26 @@ function pick(source, keys) {
 }
 
 export function normalizeRecord(module, input, requestId) {
-  if (!['accident', 'fomag'].includes(module) || typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/.test(requestId)) throw new Error('Solicitud invalida.');
-  const data = module === 'accident'
+  if (!['accident', 'notice', 'fomag'].includes(module) || typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/.test(requestId)) throw new Error('Solicitud invalida.');
+  const data = module !== 'fomag'
     ? Object.fromEntries(Object.entries(fields).map(([section, keys]) => [section, pick(input?.[section], keys)]))
     : pick(input, fomagFields);
-  const number = module === 'accident' ? data.accident.declarationNumber : data.recordNumber;
-  if (!new RegExp(`^${module === 'accident' ? 'DAT' : 'FOMAG'}-\\d{8}-\\d{2,}$`).test(number)) throw new Error('El documento necesita un consecutivo central.');
-  const name = module === 'accident' ? data.victim.fullName : data.patientName;
-  const document = module === 'accident' ? data.victim.documentNumber : data.documentNumber;
-  const date = module === 'accident' ? data.accident.registrationDate : data.registerDate;
+  const number = module !== 'fomag' ? data.accident.declarationNumber : data.recordNumber;
+  // Keep old records and their digests unchanged when no notice fields exist.
+  if (module !== 'fomag') {
+    const extra = ['template', 'zone', 'insuranceStatus', 'admissionExam', 'vitalSigns', 'initialTreatment'];
+    const present = extra.filter((key) => input.accident[key] !== undefined);
+    Object.assign(data.accident, pick(input.accident, present));
+    if (data.accident.template && !['declaration', 'notice'].includes(data.accident.template)) throw new Error('Plantilla inválida.');
+  }
+  if (!new RegExp(`^${module === 'notice' ? 'AVISO' : module === 'accident' ? 'DAT' : 'FOMAG'}-\\d{8}-\\d{2,}$`).test(number)) throw new Error('El documento necesita un consecutivo central.');
+  const name = module !== 'fomag' ? data.victim.fullName : data.patientName;
+  const document = module !== 'fomag' ? data.victim.documentNumber : data.documentNumber;
+  const date = module !== 'fomag' ? data.accident.registrationDate : data.registerDate;
   if (!name.trim() || !document.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Complete nombre, documento y fecha.');
-  if (module === 'accident' && (!data.accident.place.trim() || !data.accident.accidentDate || !data.accident.admissionDate || !data.accident.story.trim() || !data.declarant.fullName.trim())) throw new Error('Complete los campos obligatorios de la declaracion.');
+  if (module !== 'fomag' && (!data.accident.place.trim() || !data.accident.accidentDate || !data.accident.admissionDate || !data.accident.story.trim() || (module === 'accident' && !data.declarant.fullName.trim()))) throw new Error('Complete los campos obligatorios de la declaracion.');
   if (module === 'fomag' && (!data.serviceDate || !data.serviceDescription.trim())) throw new Error('Complete la atencion recibida.');
+  if (module === 'notice') data.accident.template = 'notice';
   const digest = createHash('sha256').update(JSON.stringify(data)).digest('hex');
   const summary = { number, module, name, document, date, createdAt: new Date().toISOString() };
   return { ...summary, data, requestId, digest };

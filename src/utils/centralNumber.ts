@@ -1,4 +1,4 @@
-export const reserveNumber = async (module: 'accident' | 'fomag', draftNumber: string): Promise<string> => {
+export const reserveNumber = async (module: 'accident' | 'notice' | 'fomag', draftNumber: string): Promise<string> => {
   const key = `central-request:${module}:${draftNumber}`;
   let requestId = window.localStorage.getItem(key);
   if (!requestId) {

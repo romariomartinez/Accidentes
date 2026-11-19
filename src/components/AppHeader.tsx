@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Archive, Check, ChevronDown, ClipboardList, Eraser, Eye, FileDown, FileSignature, History, Printer, Save } from 'lucide-react';
 
-export type AppModule = 'accident' | 'fomag' | 'history';
+export type AppModule = 'accident' | 'notice' | 'fomag' | 'history';
 
 interface AppHeaderProps {
   savedAt: string;
@@ -18,12 +18,14 @@ interface AppHeaderProps {
 }
 
 const modules = [
-  { id: 'accident', label: 'Accidentes', icon: ClipboardList },
+  { id: 'accident', label: 'SOAT ACCIDENTE', icon: ClipboardList },
+  { id: 'notice', label: 'ADRES ACCIDENTE', icon: FileSignature },
   { id: 'fomag', label: 'FOMAG', icon: FileSignature },
   { id: 'history', label: 'Historial', icon: History },
 ] as const;
 const titles: Record<AppModule, string> = {
   accident: 'Declaración de accidente de tránsito',
+  notice: 'Aviso de accidente de tránsito',
   fomag: 'Consentimiento FOMAG',
   history: 'Historial de documentos',
 };

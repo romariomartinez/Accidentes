@@ -20,4 +20,4 @@ export const getByPath = (data: TrafficAccidentDeclaration, path: string): strin
 };
 
 export const getMissingPrintFields = (data: TrafficAccidentDeclaration): string[] =>
-  requiredPrintFields.filter((field) => !String(getByPath(data, field.path)).trim()).map((field) => field.label);
+  requiredPrintFields.filter((field) => !(data.accident.template === 'notice' && field.path === 'declarant.fullName')).filter((field) => !String(getByPath(data, field.path)).trim()).map((field) => field.label);

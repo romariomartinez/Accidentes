@@ -1,4 +1,5 @@
 import type { jsPDF } from 'jspdf';
+import { noticeSections } from './accidentNotice';
 import type { CellHookData } from 'jspdf-autotable';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { FomagSignatureFormData } from '../types/fomag';
@@ -9,41 +10,61 @@ type Pair = [string, string | boolean];
 const navy: [number, number, number] = [22, 58, 95];
 const teal: [number, number, number] = [0, 127, 131];
 
-export async function loadPdfLogo(): Promise<string> {
+async function loadPdfImage(src: string): Promise<string> {
   const image = new Image();
-  image.src = '/hospital-logo.bmp';
+  image.src = src;
   await image.decode();
   const canvas = document.createElement('canvas');
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
   const context = canvas.getContext('2d');
-  if (!context) throw new Error('No se pudo preparar el logo del hospital.');
+  if (!context) throw new Error('No se pudo preparar la imagen del documento.');
   context.drawImage(image, 0, 0);
   return canvas.toDataURL('image/png');
 }
 
+export const loadPdfLogo = () => loadPdfImage('/hospital-logo.bmp');
+
 export async function buildPdf(module: HistoryModule, data: TrafficAccidentDeclaration | FomagSignatureFormData, logo: string) {
   const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')]);
-  const doc = new jsPDF({ unit: 'mm', format: module === 'accident' ? 'a4' : 'letter', compress: true });
+  const doc = new jsPDF({ unit: 'mm', format: module !== 'fomag' ? 'a4' : 'letter', compress: true });
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
   const accident = data as TrafficAccidentDeclaration;
   const fomag = data as FomagSignatureFormData;
-  const number = module === 'accident' ? accident.accident.declarationNumber : fomag.recordNumber;
-  const name = module === 'accident' ? accident.victim.fullName : fomag.patientName;
+  const number = module !== 'fomag' ? accident.accident.declarationNumber : fomag.recordNumber;
+  const name = module !== 'fomag' ? accident.victim.fullName : fomag.patientName;
   doc.setProperties({ title: `${number} - ${name}`, author: 'Hospital Camilo Villazón Pumarejo' });
+  const isNotice = module === 'notice' || (module === 'accident' && accident.accident.template === 'notice');
+  if (isNotice) {
+    doc.addImage(logo, 'PNG', 32, 12, 44, 23.3);
+    doc.setDrawColor(220, 229, 233); doc.setLineWidth(0.25); doc.line(84, 12, 84, 36);
+    doc.setTextColor(82, 113, 122); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+    doc.text('EMPRESA SOCIAL DEL ESTADO', 92, 15);
+    doc.setTextColor(...navy); doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.text(['Hospital Camilo Villazón', 'Pumarejo'], 92, 22);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(98, 117, 131);
+    doc.text('NIT 824002672', 92, 35);
+    doc.line(13, 41, width - 13, 41);
+    doc.setTextColor(...navy); doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+    doc.text('AVISO DE ACCIDENTE DE TRÁNSITO', width / 2, 50, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(`No. ${number}`, 13, 59);
+    doc.text(`Registro: ${formatColombianDate(accident.accident.registrationDate)}`, width - 13, 59, { align: 'right' });
+  } else {
   doc.addImage(logo, 'PNG', 13, 9, 52, 27.5);
   doc.setTextColor(...navy);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
-  doc.text(module === 'accident' ? ['DECLARACIÓN DE ACCIDENTE', 'DE TRÁNSITO'] : ['CONSENTIMIENTO', 'USUARIO FOMAG'], 78, 18);
+  doc.text(module !== 'fomag' ? ['DECLARACIÓN DE ACCIDENTE', 'DE TRÁNSITO'] : ['CONSENTIMIENTO', 'USUARIO FOMAG'], 78, 18);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text(`No. ${number}`, 78, 32);
   doc.setDrawColor(...teal);
   doc.setLineWidth(0.7);
   doc.line(13, 38, width - 13, 38);
-  let y = 41;
+  }
+  let y = isNotice ? 65 : 41;
   const lastY = () => (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
   const tableBase = {
     margin: { left: 13, right: 13, top: 18, bottom: 16 },
@@ -77,7 +98,31 @@ export async function buildPdf(module: HistoryModule, data: TrafficAccidentDecla
     y = lastY() + 2.5;
   };
   const dateTime = (date: string, time: string) => `${formatColombianDate(date)} ${formatTime12h(time)}`.trim();
-  if (module === 'accident') {
+  if (module === 'notice' || (module === 'accident' && accident.accident.template === 'notice')) {
+    noticeSections(accident).forEach(({ title, text, fields }) => {
+      if (!fields) { paragraph(title, text); return; }
+      const rows = [];
+      for (let i = 0; i < fields.length; i += 2) {
+        rows.push(fields.slice(i, i + 2).map(({ label, value }) => `${label}\n${value}`));
+        if (rows[rows.length - 1].length === 1) rows[rows.length - 1].push('');
+      }
+      autoTable(doc, {
+        ...tableBase, startY: y,
+        head: [[{ content: title.toUpperCase(), colSpan: 2 }]], body: rows,
+        bodyStyles: { fontSize: 10, cellPadding: 3, minCellHeight: 15 },
+        columnStyles: { 0: { cellWidth: (width - 26) / 2 }, 1: { cellWidth: (width - 26) / 2 } },
+      });
+      y = lastY() + 3;
+    });
+    const signature = await loadPdfImage('/firma-gerente.png');
+    const signatureWidth = 65;
+    const signatureInfo = doc.getImageProperties(signature);
+    const signatureHeight = signatureWidth * signatureInfo.height / signatureInfo.width;
+    if (y + signatureHeight + 14 > height - 16) { doc.addPage(); y = 24; }
+    doc.addImage(signature, 'PNG', (width - signatureWidth) / 2, y + 4, signatureWidth, signatureHeight);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...navy);
+    doc.text('C.C. 87101709', width / 2, y + signatureHeight + 9, { align: 'center' });
+  } else if (module !== 'fomag') {
     const { accident: a, victim: v, driver: d, owner: o, declarant: r } = accident;
     section('Registro', [['Fecha de registro', formatColombianDate(a.registrationDate)], ['Calidad de la víctima', a.victimRole.replace('Peaton', 'Peatón')], ['Víctima', v.fullName]]);
     paragraph('Relato de los hechos', a.story);

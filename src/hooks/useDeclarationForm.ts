@@ -5,7 +5,6 @@ import { createDeclarationNumber, todayInputDate } from '../utils/formatters';
 import { generateStory } from '../utils/storyGenerator';
 import { useLocalStorage } from './useLocalStorage';
 
-const storageKey = 'traffic-accident-declaration-draft';
 const driverFledText = 'Conductor huyó del lugar de los hechos; se desconocen sus datos personales y paradero';
 
 export const createEmptyDeclaration = (): TrafficAccidentDeclaration => ({
@@ -120,24 +119,31 @@ export const createExampleDeclaration = (): TrafficAccidentDeclaration => {
   return data;
 };
 
-export const useDeclarationForm = () => {
+export const useDeclarationForm = (module: 'accident' | 'notice' = 'accident') => {
+  const storageKey = module === 'notice' ? 'traffic-accident-notice-draft' : 'traffic-accident-declaration-draft';
+  const createEmpty = () => {
+    const fresh = createEmptyDeclaration();
+    fresh.accident.template = module === 'notice' ? 'notice' : 'declaration';
+    if (module === 'notice') fresh.accident.declarationNumber = fresh.accident.declarationNumber.replace('DAT-', 'AVISO-');
+    return fresh;
+  };
   const emptyDeclaration = useMemo(() => {
     const draft = window.localStorage.getItem(storageKey);
-    if (!draft) return createEmptyDeclaration();
+    if (!draft) return createEmpty();
 
     try {
       return JSON.parse(draft) as TrafficAccidentDeclaration;
     } catch {
-      return createEmptyDeclaration();
+      return createEmpty();
     }
-  }, []);
+  }, [storageKey]);
   const { storedValue, setValue, removeValue } = useLocalStorage<TrafficAccidentDeclaration>(
     storageKey,
     emptyDeclaration,
   );
   const [savedAt, setSavedAt] = useState(storedValue.metadata.savedAt);
   const form = useForm<TrafficAccidentDeclaration>({
-    defaultValues: storedValue,
+    defaultValues: { ...storedValue, accident: { ...storedValue.accident, template: module === 'notice' ? 'notice' : 'declaration' } },
     mode: 'onBlur',
   });
 
@@ -222,7 +228,7 @@ export const useDeclarationForm = () => {
 
   const clearDraft = () => {
     removeValue();
-    const fresh = createEmptyDeclaration();
+    const fresh = createEmpty();
     form.reset(fresh);
     setSavedAt('');
   };

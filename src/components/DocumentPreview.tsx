@@ -1,4 +1,5 @@
 import { CalendarDays, FileBadge2, UserRound } from 'lucide-react';
+import { AccidentNoticePreview } from './AccidentNoticePreview';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 import { emptyText, formatColombianDate, formatTime12h } from '../utils/formatters';
 
@@ -23,7 +24,7 @@ const DocumentSection = ({ title, children }: { title: string; children: React.R
   </section>
 );
 
-export const DocumentPreview = ({ data, scale = 'normal' }: Props) => (
+export const DocumentPreview = ({ data, scale = 'normal' }: Props) => data.accident.template === 'notice' ? <AccidentNoticePreview data={data} /> : (
   <article className={`document-sheet ${scale === 'full' ? 'document-sheet-full' : ''}`} id="print-document">
     <header className="doc-header">
       <div className="doc-logo">

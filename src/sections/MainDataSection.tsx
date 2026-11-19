@@ -5,6 +5,7 @@ import { SectionCard } from '../components/SectionCard';
 import { TrafficAccidentDeclaration } from '../types/declaration';
 
 interface Props {
+  notice?: boolean;
   register: UseFormRegister<TrafficAccidentDeclaration>;
   errors: FieldErrors<TrafficAccidentDeclaration>;
 }
@@ -14,10 +15,10 @@ const victimRoles = ['Peaton', 'Conductor', 'Pasajero', 'Ciclista', 'Ocupante', 
   label: value === 'Peaton' ? 'Peatón' : value,
 }));
 
-export const MainDataSection = ({ register, errors }: Props) => (
+export const MainDataSection = ({ register, errors, notice = false }: Props) => (
   <SectionCard title="Datos principales" icon={<MapPinned className="h-4 w-4" />}>
     <div className="grid gap-4 md:grid-cols-2">
-      <FormField label="Número de declaración" name="accident.declarationNumber" register={register} readOnly />
+      <FormField label={notice ? 'Número de aviso' : 'Número de declaración'} name="accident.declarationNumber" register={register} readOnly />
       <FormField label="Fecha de registro" name="accident.registrationDate" register={register} type="date" />
       <FormField label="Víctima en calidad de" name="accident.victimRole" register={register} as="select" options={victimRoles} />
       <FormField
@@ -47,8 +48,10 @@ export const MainDataSection = ({ register, errors }: Props) => (
         required
       />
       <FormField label="Hora de ingreso" name="accident.admissionTime" register={register} type="time" />
-      <FormField label="Fecha de egreso" name="accident.dischargeDate" register={register} type="date" />
-      <FormField label="Hora de egreso" name="accident.dischargeTime" register={register} type="time" />
+      {!notice ? <>
+        <FormField label="Fecha de egreso" name="accident.dischargeDate" register={register} type="date" />
+        <FormField label="Hora de egreso" name="accident.dischargeTime" register={register} type="time" />
+      </> : null}
       <FormField label="Tipo de vehículo involucrado" name="accident.vehicleType" register={register} />
       <FormField label="Placa" name="accident.licensePlate" register={register} />
     </div>

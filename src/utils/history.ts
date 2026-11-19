@@ -16,7 +16,7 @@ export async function historyRequest<T>(body?: object, query = ''): Promise<T> {
 }
 
 export async function saveHistory(module: HistoryModule, data: TrafficAccidentDeclaration | FomagSignatureFormData) {
-  const number = module === 'accident' ? (data as TrafficAccidentDeclaration).accident.declarationNumber : (data as FomagSignatureFormData).recordNumber;
+  const number = module !== 'fomag' ? (data as TrafficAccidentDeclaration).accident.declarationNumber : (data as FomagSignatureFormData).recordNumber;
   const requestId = window.localStorage.getItem(`central-request:${module}:${number}`);
   if (!requestId) throw new Error('No se encontro la reserva del documento. Vuelva a obtener su consecutivo.');
   return historyRequest({ action: 'save', module, data, requestId });

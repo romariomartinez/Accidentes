@@ -1,7 +1,7 @@
 import { TrafficAccidentDeclaration } from './declaration';
 import { FomagSignatureFormData } from './fomag';
 
-export type HistoryModule = 'accident' | 'fomag';
+export type HistoryModule = 'accident' | 'notice' | 'fomag';
 export interface HistorySummary {
   number: string;
   module: HistoryModule;

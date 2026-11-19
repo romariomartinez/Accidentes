@@ -8,6 +8,7 @@ import { reserveNumber, waitForDocument } from './utils/centralNumber';
 import { getMissingPrintFields } from './utils/validators';
 import { useEffect, useRef, useState } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { AccidentNoticeForm } from './components/AccidentNoticeForm';
 import { AccidentForm } from './components/AccidentForm';
 import { AppHeader, AppModule } from './components/AppHeader';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -19,24 +20,28 @@ import { useFomagSignatures } from './hooks/useFomagSignatures';
 import { usePrint } from './hooks/usePrint';
 
 const App = () => {
-  const { form, data, savedAt, saveDraft, clearDraft, restoreDeclaration } = useDeclarationForm();
+  const declaration = useDeclarationForm();
+  const accidentNotice = useDeclarationForm('notice');
   const fomag = useFomagSignatures();
   const { print } = usePrint();
   const [showWelcome, setShowWelcome] = useState(true);
-  const moduleFromHash = (): AppModule => window.location.hash === '#historial' ? 'history' : window.location.hash === '#fomag' ? 'fomag' : 'accident';
+  const moduleFromHash = (): AppModule => window.location.hash === '#historial' ? 'history' : window.location.hash === '#fomag' ? 'fomag' : window.location.hash === '#avisos' ? 'notice' : 'accident';
   const [activeModule, setActiveModule] = useState<AppModule>(moduleFromHash);
+  const { form, data, savedAt, saveDraft, clearDraft } = activeModule === 'notice' ? accidentNotice : declaration;
   const previousDocumentModule = useRef<HistoryModule>('accident');
   const changeModule = (module: AppModule) => {
     if (module !== 'history') previousDocumentModule.current = module;
     setActiveModule(module);
     setPreviewOpen(false);
-    window.location.hash = module === 'history' ? 'historial' : module === 'fomag' ? 'fomag' : 'accidentes';
+    setMissingFields([]); setNotice('');
+    window.location.hash = module === 'history' ? 'historial' : module === 'fomag' ? 'fomag' : module === 'notice' ? 'avisos' : 'accidentes';
   };
   useEffect(() => {
     const onHashChange = () => {
       const module = moduleFromHash();
       if (module !== 'history') previousDocumentModule.current = module;
       setActiveModule(module);
+      setPreviewOpen(false);
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
@@ -57,16 +62,17 @@ const App = () => {
     if (busyRef.current) return false;
     busyRef.current = true; setBusy(true); setMissingFields([]); setNotice('');
     try {
-      const activeForm = module === 'accident' ? form : fomag.form;
+      const documentForm = module === 'notice' ? accidentNotice : declaration;
+      const activeForm = module !== 'fomag' ? documentForm.form : fomag.form;
       if (!await activeForm.trigger()) throw new Error('Revise los campos obligatorios marcados en el formulario.');
-      if (module === 'accident') {
-        const missing = getMissingPrintFields(form.getValues());
+      if (module !== 'fomag') {
+        const missing = getMissingPrintFields(documentForm.form.getValues());
         if (missing.length) throw new Error(`Complete: ${missing.join(', ')}.`);
       }
-      const number = await reserveNumber(module, module === 'accident' ? form.getValues('accident.declarationNumber') : fomag.form.getValues('recordNumber'));
-      if (module === 'accident') { form.setValue('accident.declarationNumber', number); saveDraft(); }
+      const number = await reserveNumber(module, module !== 'fomag' ? documentForm.form.getValues('accident.declarationNumber') : fomag.form.getValues('recordNumber'));
+      if (module !== 'fomag') { documentForm.form.setValue('accident.declarationNumber', number); documentForm.saveDraft(); }
       else { fomag.form.setValue('recordNumber', number); fomag.saveDraft(); }
-      const snapshot = JSON.parse(JSON.stringify(module === 'accident' ? form.getValues() : fomag.form.getValues())) as TrafficAccidentDeclaration | FomagSignatureFormData;
+      const snapshot = JSON.parse(JSON.stringify(module !== 'fomag' ? documentForm.form.getValues() : fomag.form.getValues())) as TrafficAccidentDeclaration | FomagSignatureFormData;
       await saveHistory(module, snapshot);
       setNotice(`Documento ${number} guardado en el historial compartido.`);
       if (action === 'pdf') {
@@ -74,7 +80,7 @@ const App = () => {
         await downloadPdf(module, snapshot);
       } else if (action === 'print') {
         await waitForDocument();
-        if (module === 'accident') print(snapshot as TrafficAccidentDeclaration, setMissingFields);
+        if (module !== 'fomag') print(snapshot as TrafficAccidentDeclaration, setMissingFields);
         else {
           document.body.classList.add('print-fomag');
           try { window.print(); } finally { document.body.classList.remove('print-fomag'); }
@@ -87,26 +93,26 @@ const App = () => {
     } finally { busyRef.current = false; setBusy(false); }
   };
 
-  const handlePrint = () => runDocumentAction('accident', 'print');
+  const handlePrint = () => runDocumentAction(activeModule === 'notice' ? 'notice' : 'accident', 'print');
   const handleFomagPrint = () => runDocumentAction('fomag', 'print');
 
   const openHistoryRecord = (record: HistoryRecord) => {
     restoreReservation(record);
-    if (record.module === 'accident') {
-      restoreDeclaration({ ...record.data as TrafficAccidentDeclaration, metadata: { createdAt: record.createdAt, savedAt: record.createdAt } });
+    if (record.module !== 'fomag') {
+      (record.module === 'notice' ? accidentNotice : declaration).restoreDeclaration({ ...record.data as TrafficAccidentDeclaration, metadata: { createdAt: record.createdAt, savedAt: record.createdAt } });
     } else { fomag.form.reset(record.data as FomagSignatureFormData); fomag.saveDraft(); }
     changeModule(record.module); setMissingFields([]);
     setNotice(`Documento ${record.number} recuperado. Puede imprimirlo o descargarlo con su consecutivo original. Para cambios, inicie un documento nuevo.`);
   };
 
   const requestOpenHistoryRecord = (record: HistoryRecord) => {
-    const hasDraft = record.module === 'accident' ? Boolean(form.getValues('victim.fullName')) : Boolean(fomag.form.getValues('patientName'));
+    const hasDraft = record.module !== 'fomag' ? Boolean((record.module === 'notice' ? accidentNotice : declaration).form.getValues('victim.fullName')) : Boolean(fomag.form.getValues('patientName'));
     if (hasDraft) { setRecordToOpen(record); return; }
     openHistoryRecord(record);
   };
 
   const handleHeaderSave = () => {
-    if (activeModule === 'accident') {
+    if ((activeModule === 'accident' || activeModule === 'notice')) {
       saveDraft();
       return;
     }
@@ -114,7 +120,7 @@ const App = () => {
   };
 
   const handleHeaderPreview = () => {
-    if (activeModule === 'accident') {
+    if ((activeModule === 'accident' || activeModule === 'notice')) {
       setPreviewOpen(true);
       return;
     }
@@ -122,7 +128,7 @@ const App = () => {
   };
 
   const handleHeaderPrint = () => {
-    if (activeModule === 'accident') {
+    if ((activeModule === 'accident' || activeModule === 'notice')) {
       handlePrint();
       return;
     }
@@ -154,7 +160,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-hospital-bg text-slate-800">
       <AppHeader
-        savedAt={activeModule === 'accident' ? savedAt : fomag.savedAt}
+        savedAt={(activeModule === 'accident' || activeModule === 'notice') ? savedAt : fomag.savedAt}
         activeModule={activeModule}
         onModuleChange={changeModule}
         onSave={handleHeaderSave}
@@ -185,9 +191,9 @@ const App = () => {
           <HistoryPanel onClose={() => changeModule(previousDocumentModule.current)} onOpenRecord={requestOpenHistoryRecord} />
         </main>
       ) : <fieldset disabled={busy} className="contents">
-      {activeModule === 'accident' ? (
+      {(activeModule === 'accident' || activeModule === 'notice') ? (
         <main className="mx-auto grid max-w-[1500px] gap-5 px-4 py-5 xl:grid-cols-[minmax(540px,0.96fr)_minmax(520px,1.04fr)]">
-          <AccidentForm form={form} onDictationChange={setDictating} />
+          {activeModule === 'notice' ? <AccidentNoticeForm form={form} onDictationChange={setDictating} /> : <AccidentForm form={form} onDictationChange={setDictating} />}
           <aside className="preview-pane">
             <div className="app-chrome mb-3 flex items-center justify-between">
               <div>
@@ -214,7 +220,7 @@ const App = () => {
 
       </fieldset>}
 
-      <PreviewModal open={previewOpen} data={data} onClose={requestClosePreview} onPrint={handlePrint} onPdf={() => void runDocumentAction('accident', 'pdf')} busy={busy} />
+      <PreviewModal open={previewOpen} data={data} onClose={requestClosePreview} onPrint={handlePrint} onPdf={() => void runDocumentAction(activeModule === 'notice' ? 'notice' : 'accident', 'pdf')} busy={busy} />
       <ConfirmDialog
         open={recordToOpen !== null}
         title="Abrir documento del historial"
@@ -225,11 +231,11 @@ const App = () => {
       />
       <ConfirmDialog
         open={clearOpen}
-        title={activeModule === 'accident' ? 'Limpiar formulario' : 'Limpiar FOMAG'}
-        message={activeModule === 'accident' ? 'Se borrara el borrador local y se reiniciara la declaracion.' : 'Se borrara el borrador FOMAG y se iniciara un consentimiento nuevo.'}
+        title={(activeModule === 'accident' || activeModule === 'notice') ? (activeModule === 'notice' ? 'Limpiar aviso' : 'Limpiar declaración') : 'Limpiar FOMAG'}
+        message={(activeModule === 'accident' || activeModule === 'notice') ? 'Se borrará el borrador de este módulo y se iniciará un documento nuevo.' : 'Se borrara el borrador FOMAG y se iniciara un consentimiento nuevo.'}
         confirmText="Limpiar"
         onCancel={() => setClearOpen(false)}
-        onConfirm={activeModule === 'accident' ? confirmClear : confirmFomagClear}
+        onConfirm={(activeModule === 'accident' || activeModule === 'notice') ? confirmClear : confirmFomagClear}
       />
       <ConfirmDialog
         open={closeOpen}

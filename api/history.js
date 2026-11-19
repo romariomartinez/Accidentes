@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET' && action === 'record') {
       const number = req.query.number;
-      if (typeof number !== 'string' || !/^(DAT|FOMAG)-\d{8}-\d{2,}$/.test(number)) return res.status(400).json({ error: 'Numero invalido.' });
+      if (typeof number !== 'string' || !/^(DAT|AVISO|FOMAG)-\d{8}-\d{2,}$/.test(number)) return res.status(400).json({ error: 'Numero invalido.' });
       const raw = await redis(['GET', `history:record:${number}`]);
       return raw ? res.status(200).json({ record: JSON.parse(raw) }) : res.status(404).json({ error: 'Documento no encontrado.' });
     }
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     }
     if (req.method === 'POST' && action === 'search') {
       const query = normalizeSearch(String(req.body.query || '').slice(0, 150));
-      const module = ['accident', 'fomag'].includes(req.body.module) ? req.body.module : '';
+      const module = ['accident', 'notice', 'fomag'].includes(req.body.module) ? req.body.module : '';
       let cursor = Number(req.body.cursor || 0);
       if (!Number.isSafeInteger(cursor) || cursor < 0) return res.status(400).json({ error: 'Pagina invalida.' });
       const records = [];

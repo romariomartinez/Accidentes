@@ -4,6 +4,12 @@ export type Sex = 'Femenino' | 'Masculino' | 'Otro' | '';
 export type DeclarantRole = 'La victima' | 'Familiar' | 'Testigo' | 'Policia' | 'Otro';
 
 export interface AccidentData {
+  template?: 'declaration' | 'notice';
+  zone?: string;
+  insuranceStatus?: string;
+  admissionExam?: string;
+  vitalSigns?: string;
+  initialTreatment?: string;
   declarationNumber: string;
   registrationDate: string;
   victimRole: VictimRole;
